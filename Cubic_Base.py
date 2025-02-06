@@ -93,3 +93,7 @@ Z = lambda T, Ox, Oy, Oz, J, Bx, By, Bz : np.trace(sp.linalg.expm(-H_MF(Ox, Oy, 
 F = lambda T, Ox, Oy, Oz, J, Bx, By, Bz : -T * np.log(Z(T, Ox, Oy, Oz, J, Bx, By, Bz)) # Free Energy
 F_opt = lambda O, J, Bx, By, Bz, T : -T * np.log(Z(T, O[0], O[1], O[2], J, Bx, By, Bz)) # Free Energy Optimization Function
 
+print(np.round(Lx, 2))
+print(np.round(Ly, 2))
+print(np.round(Lz, 2))
+

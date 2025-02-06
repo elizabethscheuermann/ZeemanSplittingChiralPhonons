@@ -32,5 +32,3 @@ energies = lambda J, Ox, Oy, B : np.linalg.eigvals(H_MF(J, Ox, Oy, B))
 Z = lambda T, J, Ox, Oy, B : np.trace(sp.linalg.expm(-H_MF(J, Ox, Oy, B)/T)) # Partition Function
 F = lambda T, J, Ox, Oy, B : -T * np.log(Z(T, J, Ox, Oy, B)) if T!=0 else energies(J, Ox, Oy, B)[0] # Free Energy
 F_opt = lambda O, J, B, T : -T * np.log(Z(T, J, O[0], O[1], B)) # Free Energy Optimization Function
-
-print(Lz)
