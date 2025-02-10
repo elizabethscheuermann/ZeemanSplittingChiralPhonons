@@ -69,11 +69,22 @@ for b, B in enumerate(B_dom):
     ### OPTIMIZE FREE ENERGY
     O = sp.optimize.minimize(F_squ, x0_squ, args = (J, B, T))
     
-    ### GET STATE PROBABILITIES
-    
+    ### GET STATES AND STATE PROBABILITIES 
+    vals, vecs = np.linalg.eig(H_MF_squ(O, J, B, T))
+    Z = np.sum(np.exp(-vals/T))
+    probs = [np.exp(-val/T)/Z for val in vals]
 
     ### EVALUATE <x>, <[x, Lambda]>
+    x_exp = 0
+    y_exp = 0
+    comm_x_op_exp = 0
+    comm_y_op_exp = 0
+    for i in range(4):
+        x_exp = np.conjugate(vecs[:,i].T) @ x_squ @ vecs[:, i]
+        y_exp = np.conjugate(vecs[:,i].T) @ y_squ @ vecs[:, i]
 
+        comm_x_op_exp = np.conjugate(vecs[:,i].T) @ (x_squ @ op - op @ x_squ) @ vecs[:,i]
+        
     ### GET DYNAMICS EQ MATRIX
 
     ### GET EIGENVALUES
