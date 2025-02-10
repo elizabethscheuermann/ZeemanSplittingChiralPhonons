@@ -59,3 +59,25 @@ def DynamicsEquationMatrix(dim, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp
 
             # Get Matrix Element
             M[i,j] = np.trace(d_eq @ Lambda_i)
+
+### MAIN LOOP
+B_min = 0; B_max = 5; B_n = 8; B_dom = np.linspace(B_min, B_max, B_n)
+T0 = 0
+J0 = 1
+
+for b, B in enumerate(B_dom):
+    ### OPTIMIZE FREE ENERGY
+    O = sp.optimize.minimize(F_squ, x0_squ, args = (J, B, T))
+    
+    ### GET STATE PROBABILITIES
+    
+
+    ### EVALUATE <x>, <[x, Lambda]>
+
+    ### GET DYNAMICS EQ MATRIX
+
+    ### GET EIGENVALUES
+
+
+
+
