@@ -1,5 +1,7 @@
-import numpy as np
 from Base import *
+import numpy as np
+import scipy as sp
+import matplotlib.pyplot as plt
 
 
 def GeneralizedGellMannOperator(dim, coefs):
@@ -23,72 +25,79 @@ def GeneralizedGellMannOperator(dim, coefs):
 def Commutator(op1, op2):
     return op1@op2 - op2@op1
 
-def DynamicsEquationMatrix(dim, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp):
-    # Handle Dimension
-    if dim == 3:
-        h0 = h0_tri
-        Lz = Lz_tri
-        x = x_tri
-        y = y_tri
-    elif dim == 4:
-        h0 = h0_squ
-        Lz = Lz_squ
-        x = x_squ
-        y = y_squ
+def DE_squ(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
+    # Get commutators
+    h0_comm = h0_squ @ operator - operator @ h0_squ
+    Lz_comm = Lz_squ @ operator - operator @ Lz_squ
+    x_comm = x_squ @ operator - operator @ x_squ
+    y_comm = y_squ @ operator - operator @ y_squ
 
-    for i in range(dim**2 -1):
-        for j in range(dim**2 - 1):
-            # Get Operator
-            coefs = np.zeros((dim**2 - 1))
-            coefs[j] = 1
-            Lambda_j = GeneralizedGellMannOperator(dim, coefs)
-            
-            # Get Commutators
-            h0_comm = h0 @ Lambda_j - Lambda_j @ h0
-            Lz_comm = Lz @ Lambda_j - Lambda_j @ Lz
-            x_comm = x @ Lambda_j - Lambda_j @ x
-            y_comm = y @ Lambda_j - Lambda_j @ y
-            
-            # Get Dynamics Equation
-            d_eq = h0_comm + B * Lz_comm - J * q * (x_exp * x_comm + y_exp * y_comm) - J * Q * (comm_x_op_exp * x + comm_y_op_exp * y)
+    # Dynamics equation
+    d_eq = h0_comm + B * Lz_comm - J * q_squ * (x_exp * x_comm + y_exp * y_comm) - J * Q * (comm_x_op_exp * x_squ + comm_y_op_exp * y_squ)
 
-            # Get Second Operator
-            coefs = np.zeros((dim**2 - 1))
-            coefs[i] = 1
-            Lambda_i = GeneralizedGellMannOperator(dim, coefs)
-
-            # Get Matrix Element
-            M[i,j] = np.trace(d_eq @ Lambda_i)
+    return d_eq
 
 ### MAIN LOOP
-B_min = 0; B_max = 5; B_n = 8; B_dom = np.linspace(B_min, B_max, B_n)
+B_min = 0.1; B_max = 5; B_n = 32; B_dom = np.linspace(B_min, B_max, B_n)
 T0 = 0
-J0 = 1
+J0 = .25
+dim = 4
+
+fig, ax = plt.subplots()
+ax.set_ylim([0,10])
+ax.set_xlabel("Magnetic Field Strength B/t")
+ax.set_ylabel(r"Operator Eigenfrequency $\omega$")
 
 for b, B in enumerate(B_dom):
     ### OPTIMIZE FREE ENERGY
-    O = sp.optimize.minimize(F_squ, x0_squ, args = (J, B, T))
-    
-    ### GET STATES AND STATE PROBABILITIES 
-    vals, vecs = np.linalg.eig(H_MF_squ(O, J, B, T))
-    Z = np.sum(np.exp(-vals/T))
-    probs = [np.exp(-val/T)/Z for val in vals]
+    O = sp.optimize.minimize(F_MF_squ, x0_squ, args = (J0, B, T0))
+    #ax.scatter(B, np.max(O.x))
 
-    ### EVALUATE <x>, <[x, Lambda]>
+
+    ### GET STATES AND STATE PROBABILITIES 
+    eig_vals, eig_vecs = np.linalg.eig(H_MF_squ(O.x, J0, B))
+    Z = np.sum(np.exp(-eig_vals/T0))
+    probs = P_MF_squ(O.x, J0, B,T0)
+
+    ### EVALUTATE <x>, <y>
     x_exp = 0
     y_exp = 0
-    comm_x_op_exp = 0
-    comm_y_op_exp = 0
-    for i in range(4):
-        x_exp = np.conjugate(vecs[:,i].T) @ x_squ @ vecs[:, i]
-        y_exp = np.conjugate(vecs[:,i].T) @ y_squ @ vecs[:, i]
+    for i in range(4):      
+        x_exp += probs[i] * np.abs(np.conj(eig_vecs[:,i]).T @ x_squ @ eig_vecs[:, i])
+        y_exp += probs[i] * np.abs(np.conj(eig_vecs[:,i]).T @ y_squ @ eig_vecs[:, i])
+    
+    ### DYNAMICS MATRIX
+    M = np.zeros((dim**2 - 1, dim**2 - 1), dtype = complex)
 
-        comm_x_op_exp = np.conjugate(vecs[:,i].T) @ (x_squ @ op - op @ x_squ) @ vecs[:,i]
-        
-    ### GET DYNAMICS EQ MATRIX
+    ### LOOP OVER MATRICES
+    for i in range(dim**2 - 1):
+        ### GET OPERATOR
+        coefs = np.zeros((dim**2 - 1))
+        coefs[i] = 1
+        operator = GeneralizedGellMannOperator(dim, coefs)
 
-    ### GET EIGENVALUES
+        ### EVALUATE <[x, Lambda]>, <[y, Lambda]>
+        comm_x_op_exp = 0
+        comm_y_op_exp = 0
+        for j in range(4):
+            comm_x_op_exp += probs[j] * np.conjugate(eig_vecs[:,j].T) @ (x_squ @ operator - operator @ x_squ) @ eig_vecs[:,j]
+            comm_y_op_exp += probs[j] * np.conjugate(eig_vecs[:,j].T) @ (y_squ @ operator - operator @ y_squ) @ eig_vecs[:,j]
+        ### GET DYNAMICS EQ
+        d_eq = DE_squ(operator, J0, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, 2)
+        ### LOOP OVER SECOND MATRIX
+        for j in range(dim**2 - 1):
+            ### GET OPERATOR
+            coefs = np.zeros((dim**2 - 1))
+            coefs[j] = 1
+            operator = GeneralizedGellMannOperator(dim, coefs)
+
+            ### GET MATRIX ELEMENT
+            M[i,j] = np.trace(d_eq @ operator)
 
 
-
-
+    ### GET EIGENFREQUENCIES
+    vals = np.linalg.eigvals(M)
+    vals = [np.real(val) for val in vals if np.real(val) > 0]
+    ax.scatter([B for i in range(len(vals))], vals, color = 'black', marker = '.')
+    plt.pause(.1)
+plt.show()
