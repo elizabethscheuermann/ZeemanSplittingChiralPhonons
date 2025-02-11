@@ -8,10 +8,10 @@ import json
 
 ### CALCULATIONS
 # Parameters
-B_min, B_max, B_n = 0, 5, 4
+B_min, B_max, B_n = 0, 5, 17
 B_dom = np.linspace(B_min, B_max, B_n)
 
-J_min, J_max, J_n = 1e-1, 2, 4
+J_min, J_max, J_n = 1e-1, 2, 16
 J_dom = np.linspace(J_min, J_max, J_n)
 
 T_min, T_max, T_n = 0, 0, 1
@@ -106,7 +106,7 @@ with open(squ_data_filepath, 'w') as squ:
     for j, J in enumerate(J_dom):
         for b, B in enumerate(B_dom):
             for t, T in enumerate(T_dom):
-                line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_squ_Arr[j ,b])
+                line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_squ_Arr[j,b,t])
                 line += ", " + str(m_squ_Arr[j,b,t]) + ", " + str(chi_squ_Arr[j,b,t]) 
                 line += ", " + str(E_squ_Arr[j,b,t][0]) + ", " + str(E_squ_Arr[j,b,t][1]) + ", " + str(E_squ_Arr[j,b,t][2]) + ", " + str(E_squ_Arr[j,b,t][3])
                 line += ", " + str(p_squ_Arr[j,b,t][0]) + ", " + str(p_squ_Arr[j,b,t][1]) + ", " + str(p_squ_Arr[j,b,t][2]) + ", " + str(p_squ_Arr[j,b,t][3]) + "\n"
@@ -118,7 +118,7 @@ with open(cub_data_filepath, 'w') as cub:
     for j, J in enumerate(J_dom):
         for b, B in enumerate(B_dom):
             for t, T in enumerate(T_dom):
-                line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_cub_Arr[j ,b])
+                line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_cub_Arr[j,b,t])
                 line += ", " + str(m_cub_Arr[j,b,t]) + ", " + str(chi_cub_Arr[j,b,t]) 
                 line += ", " + str(E_cub_Arr[j,b,t][0]) + ", " + str(E_cub_Arr[j,b,t][1]) + ", " + str(E_cub_Arr[j,b,t][2]) + ", " + str(E_cub_Arr[j,b,t][3]) + ", " + str(E_cub_Arr[j,b,t][4]) + ", " + str(E_cub_Arr[j,b,t][5])
                 line += ", " + str(p_cub_Arr[j,b,t][0]) + ", " + str(p_cub_Arr[j,b,t][1]) + ", " + str(p_cub_Arr[j,b,t][2]) + ", " + str(p_cub_Arr[j,b,t][3]) + ", " + str(p_cub_Arr[j,b,t][4]) + ", " + str(p_cub_Arr[j,b,t][5]) + "\n"
