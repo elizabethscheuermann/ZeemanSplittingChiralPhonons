@@ -45,7 +45,7 @@ Z_MF_squ = lambda O, J, B, T : np.trace(sp.linalg.expm(-H_MF_squ(O, J, B)/T)) # 
 F_MF_squ = lambda O, J, B, T : np.real(-T * np.log(Z_MF_squ(O, J, B, T))) if T!=0 else np.real(np.min(np.linalg.eigvals(H_MF_squ(O, J, B)))) # Mean field free energy
 E_MF_squ = lambda O, J, B : np.sort(np.linalg.eigvals(H_MF_squ(O, J, B))) # Mean field eigenvalues
 P_MF_squ = lambda O, J, B, T : np.exp(-E_MF_squ(O, J, B)/T)/Z_MF_squ(O, J, B, T) if T!=0 else [1,0,0,0] # Mean field probabilities
-x0_squ = [1e-2, 1e-1]
+x0_squ = [.1, 0]
 def M_MF_squ(O, J, B, T):
     """ Mean Field Magnetization"""
     # Eigenvalues
@@ -96,4 +96,7 @@ def M_MF_cub(O, J, B, T):
 
     return m
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+print("h0", h0_squ)
+print("Lz", Lz_squ)
+print("x", x_squ)
+print("y", y_squ)
