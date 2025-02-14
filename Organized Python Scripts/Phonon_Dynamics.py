@@ -2,7 +2,9 @@ from Base import *
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
+colors = mcolors.BASE_COLORS.values()
 
 def GeneralizedGellMannOperator(dim, coefs):
     if len(coefs) != dim**2 - 1:
@@ -37,31 +39,36 @@ def DE_squ(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
 
     return d_eq
 
-for j in range(15):
-    coefs = np.zeros((15))
-    coefs[j] = 1
-    print(GeneralizedGellMannOperator(4, coefs))
 
 ### MAIN LOOP
-B_min = 0.1; B_max = 5; B_n = 128; B_dom = np.linspace(B_min, B_max, B_n)
+B_min = 0.1; B_max = 3; B_n = 128; B_dom = np.linspace(B_min, B_max, B_n)
 T0 = 0.1
 J0 = .25
 dim = 4
 
-fig, ax = plt.subplots()
-ax.set_ylim([0,3])
-ax.set_xlabel("Magnetic Field Strength B/t")
-ax.set_ylabel(r"Operator Eigenfrequency $\omega$")
+# Eigen frequencies
+fig2, ax2 = plt.subplots()
+ax2.set_ylabel("Eigen frequencies")
+ax2.set_xlabel("Magnetic Field Strength B/t")
+ax2.set_ylim([-2.5, 2.5])
+
+# Operator on ground state
+fig3, ax3 = plt.subplots()
+ax3.set_xlabel("Magnetic Field Strength B/t")
+ax3.set_ylabel(r"$\langle 0 | \Lambda^\dagger \Lambda | 0 \rangle$")
+
+
+
 
 Q = 4
 
 ### DATA ARRAYS
 Ox_arr = []
-x_exp_arr = []
 eig_vals_arr = []
+transition_elems = []
+x_exp_arr = []
 comm_x_op_exp_arr = []
 comm_y_op_exp_arr = []
-
 
 for b, B in enumerate(B_dom):
     ### OPTIMIZE FREE ENERGY
@@ -70,6 +77,10 @@ for b, B in enumerate(B_dom):
 
     ### GET STATES AND STATE PROBABILITIES 
     eig_vals, eig_vecs = np.linalg.eigh(H_MF_squ(O.x, J0, B))
+    indices = eig_vals.argsort()
+    eig_vals = eig_vals[indices]
+    eig_vecs = eig_vecs[:, indices]
+
     Z = np.sum(np.exp(-eig_vals/T0))
     probs = P_MF_squ(O.x, J0, B,T0)
 
@@ -117,18 +128,48 @@ for b, B in enumerate(B_dom):
             operator = GeneralizedGellMannOperator(dim, coefs)
 
             ### GET MATRIX ELEMENT
-            M[i,j] = .25 * np.trace(d_eq @ operator)
+            M[j,i] = .25 * np.trace(d_eq @ operator)
 
+    ### GET EIGENFREQUENCIES and EIGENVECS
+    eig_freqs, coef_vecs = np.linalg.eig(M)
+   
+    ### SORT
+    indices = eig_freqs.argsort()[::-1]
+    eig_freqs = eig_freqs[indices]
+    coef_vecs = coef_vecs[:, indices]
 
-    ### GET EIGENFREQUENCIES
-    vals = np.sort(np.linalg.eigvals(M))
-    eig_vals_arr.append(vals)
+    ### GET VALUES CONNECTED TO GROUND
+    eig_vals_arr.append(eig_freqs)
+    transition_elems.append([])
 
+    i = 0
+    while i < len(eig_freqs):
+        ### GET OPERATOR TRANSITION ELEMENT
+        eigen_operator = GeneralizedGellMannOperator(dim, coef_vecs[:, i])
+        operator_state = eigen_operator @ eig_vecs[:, 0]
+        
+        ### CHECK FOR DEGENERACY
+        norm = np.conj(operator_state.T) @ operator_state
+        j = 1
+        if i < 14: 
+            while (np.abs(eig_freqs[i] - eig_freqs[i+j]) < 1e-5): 
+                eigen_operator = GeneralizedGellMannOperator(dim, coef_vecs[:,j])
+                operator_state = eigen_operator @ eig_vecs[:, 0]
+                norm += np.conj(operator_state.T) @ operator_state
+                j+=1
+        transition_elems[-1].append(norm)
+        i+=j
 eig_vals_arr = np.array(eig_vals_arr)
-comm_x_op_exp_arr = np.abs(np.array(comm_x_op_exp_arr))
-ax.plot(B_dom, Ox_arr, label = 'Ox')
-ax.plot(B_dom, x_exp_arr, label = '<x>')
+transition_elems = np.array(transition_elems)
+
 for i in range(15):
-    ax.scatter(B_dom, eig_vals_arr[:,i], color = 'black')
-ax.legend()
+    ax2.scatter(B_dom, eig_vals_arr[:, i], color = 'black')
+
+
+for i in range(13):
+    ax3.scatter(B_dom, transition_elems[:, i])
+
+
+#eig_vals_arr = np.array(eig_vals_arr)
+# comm_x_op_exp_arr = np.abs(np.array(comm_x_op_exp_arr))
 plt.show()

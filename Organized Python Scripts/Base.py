@@ -93,10 +93,4 @@ def M_MF_cub(O, J, B, T):
     m = 0
     for i in range(6):
         m -= probs[i] * np.conj(vecs[:, i]).T @ Lz_cub @ vecs[:, i]
-
     return m
-
-print("h0", h0_squ)
-print("Lz", Lz_squ)
-print("x", x_squ)
-print("y", y_squ)
