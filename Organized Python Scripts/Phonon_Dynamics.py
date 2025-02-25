@@ -2,9 +2,7 @@ from Base import *
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 
-colors = mcolors.BASE_COLORS.values()
 
 def GeneralizedGellMannOperator(dim, coefs):
     if len(coefs) != dim**2 - 1:
@@ -24,8 +22,6 @@ def GeneralizedGellMannOperator(dim, coefs):
     return operator
 
    
-def Commutator(op1, op2):
-    return op1@op2 - op2@op1
 
 def DE_squ(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
     # Get commutators
@@ -41,23 +37,10 @@ def DE_squ(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
 
 
 ### MAIN LOOP
-B_min = 0.1; B_max = 3; B_n = 128; B_dom = np.linspace(B_min, B_max, B_n)
+B_min = 0.01; B_max = .4; B_n = 32; B_dom = np.linspace(B_min, B_max, B_n)
 T0 = 0.1
 J0 = .25
 dim = 4
-
-# Eigen frequencies
-fig2, ax2 = plt.subplots()
-ax2.set_ylabel("Eigen frequencies")
-ax2.set_xlabel("Magnetic Field Strength B/t")
-ax2.set_ylim([-2.5, 2.5])
-
-# Operator on ground state
-fig3, ax3 = plt.subplots()
-ax3.set_xlabel("Magnetic Field Strength B/t")
-ax3.set_ylabel(r"$\langle 0 | \Lambda^\dagger \Lambda | 0 \rangle$")
-
-
 
 
 Q = 4
@@ -120,6 +103,7 @@ for b, B in enumerate(B_dom):
 
         ### GET DYNAMICS EQ
         d_eq = DE_squ(operator, J0, B, np.max(O.x), np.min(O.x), comm_x_op_exp, comm_y_op_exp, Q)
+        
         ### LOOP OVER SECOND MATRIX
         for j in range(dim**2 - 1):
             ### GET OPERATOR
@@ -133,43 +117,63 @@ for b, B in enumerate(B_dom):
     ### GET EIGENFREQUENCIES and EIGENVECS
     eig_freqs, coef_vecs = np.linalg.eig(M)
    
-    ### SORT
+    ### SORT AND SELECT POSITIVE MOST FREQUENCIES
     indices = eig_freqs.argsort()[::-1]
-    eig_freqs = eig_freqs[indices]
-    coef_vecs = coef_vecs[:, indices]
+    eig_freqs = eig_freqs[indices[:6]]
+    coef_vecs = coef_vecs[:, indices[:6]]
+
 
     ### GET VALUES CONNECTED TO GROUND
-    eig_vals_arr.append(eig_freqs)
     transition_elems.append([])
-
+    eig_vals_arr.append([])
+    
     i = 0
     while i < len(eig_freqs):
-        ### GET OPERATOR TRANSITION ELEMENT
+        ### GET OPERATOR AND NORM TO GROUND STATE
         eigen_operator = GeneralizedGellMannOperator(dim, coef_vecs[:, i])
         operator_state = eigen_operator @ eig_vecs[:, 0]
-        
-        ### CHECK FOR DEGENERACY
-        norm = np.conj(operator_state.T) @ operator_state
-        j = 1
-        if i < 14: 
-            while (np.abs(eig_freqs[i] - eig_freqs[i+j]) < 1e-5): 
-                eigen_operator = GeneralizedGellMannOperator(dim, coef_vecs[:,j])
-                operator_state = eigen_operator @ eig_vecs[:, 0]
-                norm += np.conj(operator_state.T) @ operator_state
-                j+=1
+        norm = np.conjugate(operator_state.T) @ operator_state
+
+        ### IF NORM PASSES THRESHHOLD ADD
+        #if norm > 2e-3:
         transition_elems[-1].append(norm)
-        i+=j
+        eig_vals_arr[-1].append(eig_freqs[i])
+
+        i+=1
+   
+    
+
+    s1 = GeneralizedGellMannOperator(dim, coef_vecs[:, 2]) @ eig_vecs[:, 0]
+    s2 = GeneralizedGellMannOperator(dim, coef_vecs[:, 3]) @ eig_vecs[:, 0]
+    print(B, np.conj(s1.T) @ s2)
+
+   
+### SWITCH TO NP ARRAYS
 eig_vals_arr = np.array(eig_vals_arr)
 transition_elems = np.array(transition_elems)
 
-for i in range(15):
-    ax2.scatter(B_dom, eig_vals_arr[:, i], color = 'black')
+### PLOTTING
+# Eigen frequencies plot
+freq_fig, freq_ax = plt.subplots()
+freq_ax.set_ylabel("Eigen frequencies")
+freq_ax.set_xlabel("Magnetic Field Strength B/t")
+freq_ax.set_ylim([0, 2.5])
+
+# Operator Norms
+op_norms_fig, op_norms_ax = plt.subplots()
+op_norms_ax.set_xlabel("Magnetic Field Strength B/t")
+op_norms_ax.set_ylabel(r"$\langle 0 | \Lambda^\dagger \Lambda | 0 \rangle$")
+
+for i in range(6):
+    freq_ax.scatter(B_dom, eig_vals_arr[:, i], label = "Op. " + str(i))
+
+freq_ax.legend()
 
 
-for i in range(13):
-    ax3.scatter(B_dom, transition_elems[:, i])
+for i in range(6):
+    op_norms_ax.scatter(B_dom, transition_elems[:,i], label = "Op." + str(i))
+
+op_norms_ax.legend()
 
 
-#eig_vals_arr = np.array(eig_vals_arr)
-# comm_x_op_exp_arr = np.abs(np.array(comm_x_op_exp_arr))
 plt.show()

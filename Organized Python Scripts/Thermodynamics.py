@@ -8,7 +8,7 @@ import json
 
 ### CALCULATIONS
 # Parameters
-B_min, B_max, B_n = 0, 5, 17
+B_min, B_max, B_n = 0, 5, 64
 B_dom = np.linspace(B_min, B_max, B_n)
 
 J_min, J_max, J_n = 1e-1, 2, 16
@@ -64,6 +64,7 @@ for j, J in enumerate(J_dom):
             m_tri_Arr[j, b, t] = M_MF_tri(O_tri.x, J, B, T)
             m_squ_Arr[j, b, t] = M_MF_squ(O_squ.x, J, B, T)
             m_cub_Arr[j, b, t] = M_MF_cub(O_cub.x, J, [0, 0, B], T)
+            #print(M_MF_cub(O_cub.x, J, [0,0,B], T))
 
     # Magnetic Susceptibility
     for t, T in enumerate(T_dom):
@@ -112,6 +113,7 @@ with open(squ_data_filepath, 'w') as squ:
                 line += ", " + str(p_squ_Arr[j,b,t][0]) + ", " + str(p_squ_Arr[j,b,t][1]) + ", " + str(p_squ_Arr[j,b,t][2]) + ", " + str(p_squ_Arr[j,b,t][3]) + "\n"
                 squ.write(line)
 
+                
 # Cubic Write Loop
 with open(cub_data_filepath, 'w') as cub:
     cub.write("J, B, T, O, m, chi, E0, E1, E2, E3, E4, E5, p0, p1, p2, p3, p4, p5 \n")
@@ -123,7 +125,6 @@ with open(cub_data_filepath, 'w') as cub:
                 line += ", " + str(E_cub_Arr[j,b,t][0]) + ", " + str(E_cub_Arr[j,b,t][1]) + ", " + str(E_cub_Arr[j,b,t][2]) + ", " + str(E_cub_Arr[j,b,t][3]) + ", " + str(E_cub_Arr[j,b,t][4]) + ", " + str(E_cub_Arr[j,b,t][5])
                 line += ", " + str(p_cub_Arr[j,b,t][0]) + ", " + str(p_cub_Arr[j,b,t][1]) + ", " + str(p_cub_Arr[j,b,t][2]) + ", " + str(p_cub_Arr[j,b,t][3]) + ", " + str(p_cub_Arr[j,b,t][4]) + ", " + str(p_cub_Arr[j,b,t][5]) + "\n"
                 cub.write(line)
-
 # Create .json summary file
 with open("Data Runs/" + folder_path + "/parameters.json", "w") as json_file:
     json_data = {"T_min": T_min, "T_max": T_max, "T_n": T_n,  "B_min": B_min, "B_max": B_max, "B_n": B_n, "J_min": J_min, "J_max": J_max, "J_n": J_n}
