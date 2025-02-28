@@ -37,7 +37,7 @@ def DE_squ(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
 
 
 ### MAIN LOOP
-B_min = 0.01; B_max = .4; B_n = 32; B_dom = np.linspace(B_min, B_max, B_n)
+B_min = 0.1; B_max = 3; B_n = 64; B_dom = np.linspace(B_min, B_max, B_n)
 T0 = 0.1
 J0 = .25
 dim = 4
@@ -122,6 +122,7 @@ for b, B in enumerate(B_dom):
     eig_freqs = eig_freqs[indices[:6]]
     coef_vecs = coef_vecs[:, indices[:6]]
 
+    #print(B,np.round(M,4))
 
     ### GET VALUES CONNECTED TO GROUND
     transition_elems.append([])
@@ -135,17 +136,17 @@ for b, B in enumerate(B_dom):
         norm = np.conjugate(operator_state.T) @ operator_state
 
         ### IF NORM PASSES THRESHHOLD ADD
-        #if norm > 2e-3:
-        transition_elems[-1].append(norm)
-        eig_vals_arr[-1].append(eig_freqs[i])
+        if norm > 1e-3:
+            transition_elems[-1].append(norm)
+            eig_vals_arr[-1].append(eig_freqs[i])
 
         i+=1
    
+    print(len(eig_vals_arr[-1]))
     
 
-    s1 = GeneralizedGellMannOperator(dim, coef_vecs[:, 2]) @ eig_vecs[:, 0]
-    s2 = GeneralizedGellMannOperator(dim, coef_vecs[:, 3]) @ eig_vecs[:, 0]
-    print(B, np.conj(s1.T) @ s2)
+    #s1 = GeneralizedGellMannOperator(dim, coef_vecs[:, 2]) @ eig_vecs[:, 0]
+    #s2 = GeneralizedGellMannOperator(dim, coef_vecs[:, 3]) @ eig_vecs[:, 0]
 
    
 ### SWITCH TO NP ARRAYS
@@ -164,16 +165,17 @@ op_norms_fig, op_norms_ax = plt.subplots()
 op_norms_ax.set_xlabel("Magnetic Field Strength B/t")
 op_norms_ax.set_ylabel(r"$\langle 0 | \Lambda^\dagger \Lambda | 0 \rangle$")
 
-for i in range(6):
-    freq_ax.scatter(B_dom, eig_vals_arr[:, i], label = "Op. " + str(i))
+for i in range(3):
+    freq_ax.scatter(B_dom, eig_vals_arr[:, i], label = f"$\omega_{{{i}}}$")
 
 freq_ax.legend()
 
 
-for i in range(6):
+for i in range(3):
     op_norms_ax.scatter(B_dom, transition_elems[:,i], label = "Op." + str(i))
 
-op_norms_ax.legend()
+#op_norms_ax.legend()
 
 
 plt.show()
+#np.savetxt("testing.csv", M)

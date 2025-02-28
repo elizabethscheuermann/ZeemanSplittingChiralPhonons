@@ -2,6 +2,7 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 import os
+from Base import *
 
 folder_path = "Data Runs/T=0, B=[0,5,64], J=[0.1,2,16]/"
 
@@ -172,6 +173,77 @@ order_param_ax[2].set_title(r"Cubic Lattice")
 
 order_param_fig.suptitle(r"Mean Field Order Parameter, $T = $" + str(T_dom[T0_index]))
 
+tri_order_param_fig, tri_order_param_ax = plt.subplots()
+tri_order_param_ax.set_xlabel(r"Interaction Strength J/t")
+tri_order_param_ax.set_ylabel(r"Magnetic Field Strength B/t")
+tri_order_param_ax.set_title(r"Triangular Lattice Order Parameter $\langle x \rangle$ at " + f"$T = {{{T_dom[T0_index]}}}$")
+
+tri_im = tri_order_param_ax.contourf(J_mesh, B_mesh, np.round(ox_tri_arr[:, :, T0_index].T,4))
+tri_order_param_fig.colorbar(tri_im, location = 'right')
+
+squ_order_param_fig, squ_order_param_ax = plt.subplots()
+squ_order_param_ax.set_xlabel(r"Interaction Strength J/t")
+squ_order_param_ax.set_ylabel(r"Magnetic Field Strength B/t")
+squ_order_param_ax.set_title(r"Square Lattice Order Parameter $\langle x \rangle$ at " + f"$T = {{{T_dom[T0_index]}}}$")
+
+squ_im = squ_order_param_ax.contourf(J_mesh, B_mesh, np.round(ox_squ_arr[:, :, T0_index].T,4))
+squ_order_param_fig.colorbar(squ_im, location = 'right')
+
+cub_order_param_fig, cub_order_param_ax = plt.subplots()
+cub_order_param_ax.set_xlabel(r"Interaction Strength J/t")
+cub_order_param_ax.set_ylabel(r"Magnetic Field Strength B/t")
+cub_order_param_ax.set_title(r"Cubic Lattice Order Paramater $\langle x \rangle$ at " + f"$T = {{{T_dom[T0_index]}}}$")
+
+cub_im = cub_order_param_ax.contourf(J_mesh, B_mesh, np.round(ox_cub_arr[:, :, T0_index].T,4))
+cub_order_param_fig.colorbar(cub_im, location = 'right')
+
+# Cubic Tuning Plots
+B0 = 20
+phi_1 = 0
+theta_1 = 0
+B1 = [B0 * np.cos(phi_1)*np.sin(theta_1), B0 * np.sin(phi_1) * np.sin(theta_1), B0 * np.cos(theta_1)]
+
+phi_2 = 0
+theta_2 = np.pi/2
+B2 = [B0 * np.cos(phi_2)*np.sin(theta_2), B0 * np.sin(phi_2) * np.sin(theta_2), B0 * np.cos(theta_2)]
+
+phi_3 = np.pi/4
+theta_3 = np.pi/4
+B3 = [B0 * np.cos(phi_3)*np.sin(theta_3), B0 * np.sin(phi_3) * np.sin(theta_3), B0 * np.cos(theta_3)]
+
+O_bound = 2
+O_N = 32
+Ox_dom = np.linspace(-O_bound, O_bound, O_N)
+Oy_dom = np.linspace(-O_bound, O_bound, O_N)
+Ox_mesh, Oy_mesh = np.meshgrid(Ox_dom, Oy_dom)
+J0 = 5
+T0 = 0.1
+
+F1_arr = np.zeros((O_N, O_N))
+F2_arr = np.zeros((O_N, O_N))
+F3_arr = np.zeros((O_N, O_N))
+for x, Ox in enumerate(Ox_dom):
+    for y, Oy in enumerate(Oy_dom):
+        F1_arr[x,y] = F_MF_cub([Ox, Oy, 0.1], J0, B1, T0)
+        F2_arr[x,y] = F_MF_cub([Ox, Oy, 0.1], J0, B2, T0)
+        F3_arr[x,y] = F_MF_cub([Ox, Oy, 0.1], J0, B3, T0)
+
+cubic_tuning_fig, cubic_tuning_ax = plt.subplots(1, 3)
+cubic_tuning_ax[0].contourf(Ox_mesh, Oy_mesh, F1_arr.T)
+cubic_tuning_ax[1].contourf(Ox_mesh, Oy_mesh, F2_arr.T)
+cubic_tuning_ax[2].contourf(Ox_mesh, Oy_mesh, F3_arr.T)
+
+cubic_tuning_ax[0].set_xlabel(r"x Order Parameter $\langle x \rangle$")
+cubic_tuning_ax[0].set_ylabel(r"y Order Parameter $\langle y \rangle$")
+cubic_tuning_ax[0].set_title(r"$\phi = 0, \theta = 0$")
+
+cubic_tuning_ax[1].set_xlabel(r"x Order Parameter $\langle x \rangle$")
+cubic_tuning_ax[1].set_ylabel(r"y Order Parameter $\langle y \rangle$")
+cubic_tuning_ax[1].set_title(r"$\phi = 0, \theta = \pi/2$")
+
+cubic_tuning_ax[2].set_xlabel(r"x Order Parameter $\langle x \rangle$")
+cubic_tuning_ax[2].set_ylabel(r"y Order Parameter $\langle y \rangle$")
+cubic_tuning_ax[2].set_title(r"$\phi = \pi/4, \theta = \pi/4$")
 
 ### SAVE FIGURES
 if not (os.path.isdir(folder_path + "/Plots")):
@@ -196,7 +268,19 @@ magn_fig.savefig(folder_path + "/Plots/Magnetization_Figure.jpg")
 chi_fig.tight_layout()
 chi_fig.savefig(folder_path + "/Plots/Susceptibility_Figure.jpg")
 
+order_param_fig.set_size_inches(9,4)
 order_param_fig.tight_layout()
-order_param_fig.savefig(folder_path + "/Plots/OrderParameter_Figure.jpg")
+order_param_fig.savefig(folder_path + "/Plots/CombinedOrderParameter_Figure.jpg")
 
+tri_order_param_fig.tight_layout()
+tri_order_param_fig.savefig(folder_path + "/Plots/TriangularOrderParameter_Figure.jpg")
 
+squ_order_param_fig.tight_layout()
+squ_order_param_fig.savefig(folder_path + "/Plots/SquareOrderParameter_Figure.jpg")
+
+cub_order_param_fig.tight_layout()
+cub_order_param_fig.savefig(folder_path + "/Plots/CubicOrderParameter_Figure.jpg")
+
+cubic_tuning_fig.set_size_inches(9, 4)
+cubic_tuning_fig.tight_layout()
+cubic_tuning_fig.savefig(folder_path + "/Plots/CubicTuning_Figure.jpg")
