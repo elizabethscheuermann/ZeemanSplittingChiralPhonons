@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from Base import *
 
-folder_path = "Data Runs/T=0, B=[0,5,64], J=[0.1,2,16]/"
+folder_path = "Data Runs/T=[0,2,5], B=[0,5,16], J=[0.1,2,16]/"
 
 ### GET PARAMETERS
 with open(folder_path + "parameters.json", "r") as params_file:
@@ -17,7 +17,7 @@ T_dom = np.linspace(params["T_min"], params["T_max"], params["T_n"])
 
 J_mesh, B_mesh = np.meshgrid(J_dom, B_dom)
 
-
+           
 ### GET DATA
 # Triangular Lattice
 tri_data = np.loadtxt(folder_path + "TriangularLattice.csv", delimiter = ",", skiprows = 1)
@@ -49,6 +49,8 @@ p1_squ_arr = np.reshape(squ_data.T[11], (params["J_n"], params["B_n"], params["T
 p2_squ_arr = np.reshape(squ_data.T[12], (params["J_n"], params["B_n"], params["T_n"]))
 p3_squ_arr = np.reshape(squ_data.T[13], (params["J_n"], params["B_n"], params["T_n"]))
 
+boundary_arr = np.reshape(squ_data.T[14], (params["J_n"], params["B_n"], params["T_n"]))
+print(boundary_arr)
 # Cubic Lattice
 cub_data = np.loadtxt(folder_path + "CubicLattice.csv", delimiter = ",", skiprows = 1)
 ox_cub_arr = np.reshape(cub_data.T[3], (params["J_n"], params["B_n"], params["T_n"]))
@@ -75,13 +77,16 @@ J0_index = 3
 B0_index = 1
 T0_index = 0
 
+### COMMON STRINGS
+B_LABEL = r"Magnetic Field Strength H/t"
+J_LABEL = r"Interactoin Strength J/t"
 # Energy Levels
 tri_energies_fig, tri_energies_ax = plt.subplots()
 tri_energies_ax.plot(B_dom, E0_tri_arr[J0_index, :, T0_index], label = r'$|0\rangle$')
 tri_energies_ax.plot(B_dom, E1_tri_arr[J0_index, :, T0_index], label = r'$|-1\rangle$')
 tri_energies_ax.plot(B_dom, E2_tri_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
 
-tri_energies_ax.set_xlabel(r"Magnetic Field Strength B/t")
+tri_energies_ax.set_xlabel(B_LABEL)
 tri_energies_ax.set_ylabel(r"Energy")
 tri_energies_ax.set_title(r"Triangular Lattice Energy Levels, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
 tri_energies_ax.legend()
@@ -92,7 +97,7 @@ squ_energies_ax.plot(B_dom, E1_squ_arr[J0_index, :, T0_index], label = r'$|-1\ra
 squ_energies_ax.plot(B_dom, E2_squ_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
 squ_energies_ax.plot(B_dom, E3_squ_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
 
-squ_energies_ax.set_xlabel(r"Magnetic Field Strength B/t")
+squ_energies_ax.set_xlabel(B_LABEL)
 squ_energies_ax.set_ylabel(r"Energy")
 squ_energies_ax.set_title(r"Square Lattice Energy Levels, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
 squ_energies_ax.legend()
@@ -107,7 +112,7 @@ cub_energies_ax.plot(B_dom, E4_cub_arr[J0_index, :, T0_index], label = r'$|2\ran
 cub_energies_ax.plot(B_dom, E5_cub_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
 ### LABELS INCORRECT
 
-cub_energies_ax.set_xlabel(r"Magnetic Field Strength B/t")
+cub_energies_ax.set_xlabel(B_LABEL)
 cub_energies_ax.set_ylabel(r"Energy")
 cub_energies_ax.set_title(r"Cubic Lattice Energy Levels, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
 cub_energies_ax.legend()
@@ -119,7 +124,7 @@ probs_ax.plot(B_dom, p1_squ_arr[J0_index, :, T0_index], label = r'$|-1\rangle$')
 probs_ax.plot(B_dom, p2_squ_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
 probs_ax.plot(B_dom, p3_squ_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
 
-probs_ax.set_xlabel(r"Magnetic Field Strength B/t")
+probs_ax.set_xlabel(B_LABEL)
 probs_ax.set_ylabel(r"Probability")
 probs_ax.set_title(r"Square State Probabilities, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
 probs_ax.legend()
@@ -130,7 +135,7 @@ magn_ax.plot(B_dom, m_tri_arr[J0_index, :, T0_index], label = r"Triangular")
 magn_ax.plot(B_dom, m_squ_arr[J0_index, :, T0_index], label = r"Square")
 magn_ax.plot(B_dom, m_cub_arr[J0_index, :, T0_index], label = r"Cubic")
 
-magn_ax.set_xlabel(r"Magnetic Field Strength B/t")
+magn_ax.set_xlabel(B_LABEL)
 magn_ax.set_ylabel(r"Magnetization m")
 magn_ax.set_title(r"Model Magnetizations, $J = $" + str(J_dom[J0_index]) + ", $T = $" + str(T_dom[T0_index]))
 magn_ax.legend()
@@ -141,7 +146,7 @@ chi_ax.plot(J_dom, chi_tri_arr[:, B0_index, T0_index], label = r"Triangular")
 chi_ax.plot(J_dom, chi_squ_arr[:, B0_index, T0_index], label = r"Square")
 # chi_ax.plot(J_dom, chi_cub_arr[:, B0_index, T0_index], label = r"Cubic") ### EXCLUDING CUBIC BECAUSE ITS NOT WORKING
 
-chi_ax.set_xlabel(r"Interaction Strength J/t")
+chi_ax.set_xlabel(J_LABEL)
 chi_ax.set_ylabel(r"Magnetic Susceptibility $\chi$")
 chi_ax.set_title(r"Model Magnetic Susceptibilities, $B = $" + str(B_dom[B0_index]) + ", $T = $" + str(T_dom[T0_index]))
 chi_ax.legend()
@@ -159,39 +164,39 @@ order_param_ax[0].contourf(J_mesh, B_mesh, ox_tri_arr[:, :, T0_index].T)
 order_param_ax[1].contourf(J_mesh, B_mesh, ox_squ_arr[:, :, T0_index].T)
 order_param_ax[2].contourf(J_mesh, B_mesh, ox_cub_arr[:, :, T0_index].T)
 
-order_param_ax[0].set_xlabel(r"Interaction Strength J/t")
-order_param_ax[0].set_ylabel(r"Magnetic Field Strength B/t")
+order_param_ax[0].set_xlabel(J_LABEL)
+order_param_ax[0].set_ylabel(B_LABEL)
 order_param_ax[0].set_title(r"Triangular Lattice")
 
-order_param_ax[1].set_xlabel(r"Interaction Strength J/t")
-order_param_ax[1].set_ylabel(r"Magnetic Field Strength B/t")
+order_param_ax[1].set_xlabel(J_LABEL)
+order_param_ax[1].set_ylabel(B_LABEL)
 order_param_ax[1].set_title(r"Square Lattice")
 
-order_param_ax[2].set_xlabel(r"Interaction Strength J/t")
-order_param_ax[2].set_ylabel(r"Magnetic Field Strength B/t")
+order_param_ax[2].set_xlabel(J_LABEL)
+order_param_ax[2].set_ylabel(B_LABEL)
 order_param_ax[2].set_title(r"Cubic Lattice")
 
 order_param_fig.suptitle(r"Mean Field Order Parameter, $T = $" + str(T_dom[T0_index]))
 
 tri_order_param_fig, tri_order_param_ax = plt.subplots()
-tri_order_param_ax.set_xlabel(r"Interaction Strength J/t")
-tri_order_param_ax.set_ylabel(r"Magnetic Field Strength B/t")
+tri_order_param_ax.set_xlabel(J_LABEL)
+tri_order_param_ax.set_ylabel(B_LABEL)
 tri_order_param_ax.set_title(r"Triangular Lattice Order Parameter $\langle x \rangle$ at " + f"$T = {{{T_dom[T0_index]}}}$")
 
 tri_im = tri_order_param_ax.contourf(J_mesh, B_mesh, np.round(ox_tri_arr[:, :, T0_index].T,4))
 tri_order_param_fig.colorbar(tri_im, location = 'right')
 
 squ_order_param_fig, squ_order_param_ax = plt.subplots()
-squ_order_param_ax.set_xlabel(r"Interaction Strength J/t")
-squ_order_param_ax.set_ylabel(r"Magnetic Field Strength B/t")
+squ_order_param_ax.set_xlabel(J_LABEL)
+squ_order_param_ax.set_ylabel(B_LABEL)
 squ_order_param_ax.set_title(r"Square Lattice Order Parameter $\langle x \rangle$ at " + f"$T = {{{T_dom[T0_index]}}}$")
 
 squ_im = squ_order_param_ax.contourf(J_mesh, B_mesh, np.round(ox_squ_arr[:, :, T0_index].T,4))
 squ_order_param_fig.colorbar(squ_im, location = 'right')
 
 cub_order_param_fig, cub_order_param_ax = plt.subplots()
-cub_order_param_ax.set_xlabel(r"Interaction Strength J/t")
-cub_order_param_ax.set_ylabel(r"Magnetic Field Strength B/t")
+cub_order_param_ax.set_xlabel(J_LABEL)
+cub_order_param_ax.set_ylabel(B_LABEL)
 cub_order_param_ax.set_title(r"Cubic Lattice Order Paramater $\langle x \rangle$ at " + f"$T = {{{T_dom[T0_index]}}}$")
 
 cub_im = cub_order_param_ax.contourf(J_mesh, B_mesh, np.round(ox_cub_arr[:, :, T0_index].T,4))
@@ -244,6 +249,9 @@ cubic_tuning_ax[1].set_title(r"$\phi = 0, \theta = \pi/2$")
 cubic_tuning_ax[2].set_xlabel(r"x Order Parameter $\langle x \rangle$")
 cubic_tuning_ax[2].set_ylabel(r"y Order Parameter $\langle y \rangle$")
 cubic_tuning_ax[2].set_title(r"$\phi = \pi/4, \theta = \pi/4$")
+
+# Boundary plots
+
 
 ### SAVE FIGURES
 if not (os.path.isdir(folder_path + "/Plots")):

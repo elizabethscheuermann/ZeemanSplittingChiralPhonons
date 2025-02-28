@@ -166,7 +166,7 @@ op_norms_ax.set_xlabel("Magnetic Field Strength B/t")
 op_norms_ax.set_ylabel(r"$\langle 0 | \Lambda^\dagger \Lambda | 0 \rangle$")
 
 for i in range(3):
-    freq_ax.scatter(B_dom, eig_vals_arr[:, i], label = f"$\omega_{{{i}}}$")
+    freq_ax.plot(B_dom, eig_vals_arr[:, i], label = f"$\omega_{{{i}}}$")
 
 freq_ax.legend()
 

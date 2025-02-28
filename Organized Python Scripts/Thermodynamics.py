@@ -8,13 +8,13 @@ import json
 
 ### CALCULATIONS
 # Parameters
-B_min, B_max, B_n = 0, 5, 32
+B_min, B_max, B_n = 0, 5, 16
 B_dom = np.linspace(B_min, B_max, B_n)
 
-J_min, J_max, J_n = 1e-1, 2, 32
+J_min, J_max, J_n = 1e-1, 2, 16
 J_dom = np.linspace(J_min, J_max, J_n)
 
-T_min, T_max, T_n = 0, 0, 1
+T_min, T_max, T_n = 0, 2, 5
 T_dom = np.linspace(T_min, T_max, T_n)
 
 # Data Arrays
@@ -43,6 +43,7 @@ tri_phase_bound = []
 cub_phase_bound = []
 
 for j, J in enumerate(J_dom):
+    print(J)
     for b, B in enumerate(B_dom):
         for t, T in enumerate(T_dom):
             # Order parameters
@@ -118,11 +119,11 @@ with open(tri_data_filepath, 'w') as tri:
                 line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_tri_Arr[j,b,t])
                 line += ", " + str(m_tri_Arr[j,b,t]) + ", " + str(chi_tri_Arr[j,b,t]) 
                 line += ", " + str(E_tri_Arr[j,b,t][0]) + ", " + str(E_tri_Arr[j,b,t][1]) + ", " + str(E_tri_Arr[j,b,t][2])
-                line += ", " + str(p_tri_Arr[j,b,t][0]) + ", " + str(p_tri_Arr[j,b,t][1]) + ", " + str(p_tri_Arr[j,b,t][2]) + "\n"
+                line += ", " + str(p_tri_Arr[j,b,t][0]) + ", " + str(p_tri_Arr[j,b,t][1]) + ", " + str(p_tri_Arr[j,b,t][2])
                 if [j, b, t] in tri_phase_bound:
-                    line+= ", 1"
+                    line+= ", 1 \n"
                 else:
-                    line+= ", 0"
+                    line+= ", 0 \n"
 
                 tri.write(line)
 
@@ -135,11 +136,11 @@ with open(squ_data_filepath, 'w') as squ:
                 line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_squ_Arr[j,b,t])
                 line += ", " + str(m_squ_Arr[j,b,t]) + ", " + str(chi_squ_Arr[j,b,t]) 
                 line += ", " + str(E_squ_Arr[j,b,t][0]) + ", " + str(E_squ_Arr[j,b,t][1]) + ", " + str(E_squ_Arr[j,b,t][2]) + ", " + str(E_squ_Arr[j,b,t][3])
-                line += ", " + str(p_squ_Arr[j,b,t][0]) + ", " + str(p_squ_Arr[j,b,t][1]) + ", " + str(p_squ_Arr[j,b,t][2]) + ", " + str(p_squ_Arr[j,b,t][3]) + "\n"
+                line += ", " + str(p_squ_Arr[j,b,t][0]) + ", " + str(p_squ_Arr[j,b,t][1]) + ", " + str(p_squ_Arr[j,b,t][2]) + ", " + str(p_squ_Arr[j,b,t][3])
                 if [j, b, t] in squ_phase_bound:
-                    line+= ", 1"
+                    line+= ", 1 \n"
                 else:
-                    line+= ", 0"
+                    line+= ", 0 \n"
                 squ.write(line)
 
                 
@@ -154,9 +155,9 @@ with open(cub_data_filepath, 'w') as cub:
                 line += ", " + str(E_cub_Arr[j,b,t][0]) + ", " + str(E_cub_Arr[j,b,t][1]) + ", " + str(E_cub_Arr[j,b,t][2]) + ", " + str(E_cub_Arr[j,b,t][3]) + ", " + str(E_cub_Arr[j,b,t][4]) + ", " + str(E_cub_Arr[j,b,t][5])
                 line += ", " + str(p_cub_Arr[j,b,t][0]) + ", " + str(p_cub_Arr[j,b,t][1]) + ", " + str(p_cub_Arr[j,b,t][2]) + ", " + str(p_cub_Arr[j,b,t][3]) + ", " + str(p_cub_Arr[j,b,t][4]) + ", " + str(p_cub_Arr[j,b,t][5]) + "\n"
                 if [j, b, t] in cub_phase_bound:
-                    line+= ", 1"
+                    line+= ", 1 \n"
                 else:
-                    line+= ", 0"
+                    line+= ", 0 \n"
                 cub.write(line)
 
 # Phase Boundary Write Loop
