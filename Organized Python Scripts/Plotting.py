@@ -17,10 +17,14 @@ T_dom = np.linspace(params["T_min"], params["T_max"], params["T_n"])
 
 J_mesh, B_mesh = np.meshgrid(J_dom, B_dom)
 
-           
+# Make folder
+if not (os.path.isdir(folder_path + "/Plots")):
+    os.mkdir(folder_path + "/Plots")
+
+plt.rc('text.latex', preamble=r'\usepackage{amsmath}')
 ### GET DATA
 # Triangular Lattice
-tri_data = np.loadtxt(folder_path + "TriangularLattice.csv", delimiter = ",", skiprows = 1)
+tri_data = np.loadtxt(folder_path + "TriangularLattice_Data.csv", delimiter = ",", skiprows = 1)
 ox_tri_arr = np.reshape(tri_data.T[3], (params["J_n"], params["B_n"], params["T_n"]))
 m_tri_arr = np.reshape(tri_data.T[4], (params["J_n"], params["B_n"], params["T_n"]))
 chi_tri_arr = np.reshape(tri_data.T[5], (params["J_n"], params["B_n"], params["T_n"]))
@@ -33,8 +37,10 @@ p0_tri_arr = np.reshape(tri_data.T[9], (params["J_n"], params["B_n"], params["T_
 p1_tri_arr = np.reshape(tri_data.T[10], (params["J_n"], params["B_n"], params["T_n"]))
 p2_tri_arr = np.reshape(tri_data.T[11], (params["J_n"], params["B_n"], params["T_n"]))
 
+tri_boundary_arr = np.reshape(tri_data.T[12], (params["J_n"], params["B_n"], params["T_n"]))
+
 # Square Lattice
-squ_data = np.loadtxt(folder_path + "SquareLattice.csv", delimiter = ",", skiprows = 1)
+squ_data = np.loadtxt(folder_path + "SquareLattice_Data.csv", delimiter = ",", skiprows = 1)
 ox_squ_arr = np.reshape(squ_data.T[3], (params["J_n"], params["B_n"], params["T_n"]))
 m_squ_arr = np.reshape(squ_data.T[4], (params["J_n"], params["B_n"], params["T_n"]))
 chi_squ_arr = np.reshape(squ_data.T[5], (params["J_n"], params["B_n"], params["T_n"]))
@@ -49,10 +55,10 @@ p1_squ_arr = np.reshape(squ_data.T[11], (params["J_n"], params["B_n"], params["T
 p2_squ_arr = np.reshape(squ_data.T[12], (params["J_n"], params["B_n"], params["T_n"]))
 p3_squ_arr = np.reshape(squ_data.T[13], (params["J_n"], params["B_n"], params["T_n"]))
 
-boundary_arr = np.reshape(squ_data.T[14], (params["J_n"], params["B_n"], params["T_n"]))
-print(boundary_arr)
+squ_boundary_arr = np.reshape(squ_data.T[14], (params["J_n"], params["B_n"], params["T_n"]))
+
 # Cubic Lattice
-cub_data = np.loadtxt(folder_path + "CubicLattice.csv", delimiter = ",", skiprows = 1)
+cub_data = np.loadtxt(folder_path + "CubicLattice_Data.csv", delimiter = ",", skiprows = 1)
 ox_cub_arr = np.reshape(cub_data.T[3], (params["J_n"], params["B_n"], params["T_n"]))
 m_cub_arr = np.reshape(cub_data.T[4], (params["J_n"], params["B_n"], params["T_n"]))
 chi_cub_arr = np.reshape(cub_data.T[5], (params["J_n"], params["B_n"], params["T_n"]))
@@ -72,6 +78,8 @@ p4_cub_arr = np.reshape(cub_data.T[16], (params["J_n"], params["B_n"], params["T
 p5_cub_arr = np.reshape(cub_data.T[17], (params["J_n"], params["B_n"], params["T_n"]))
 
 
+cub_boundary_arr = np.reshape(cub_data.T[18], (params["J_n"], params["B_n"], params["T_n"]))
+
 ### PLOTTING
 J0_index = 3
 B0_index = 1
@@ -80,76 +88,104 @@ T0_index = 0
 ### COMMON STRINGS
 B_LABEL = r"Magnetic Field Strength H/t"
 J_LABEL = r"Interactoin Strength J/t"
-# Energy Levels
-tri_energies_fig, tri_energies_ax = plt.subplots()
-tri_energies_ax.plot(B_dom, E0_tri_arr[J0_index, :, T0_index], label = r'$|0\rangle$')
-tri_energies_ax.plot(B_dom, E1_tri_arr[J0_index, :, T0_index], label = r'$|-1\rangle$')
-tri_energies_ax.plot(B_dom, E2_tri_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
 
-tri_energies_ax.set_xlabel(B_LABEL)
-tri_energies_ax.set_ylabel(r"Energy")
-tri_energies_ax.set_title(r"Triangular Lattice Energy Levels, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
-tri_energies_ax.legend()
+### PLOTTING FUNCTIONS
+def Plot1D(X, Y, datasets, labels, path, title = ""):
+    fig, ax = plt.subplots()
+    if X == "B":
+        ax.set_xlabel(B_LABEL)
+        dom = B_dom
+    elif X == "J":
+        ax.set_xlabel(J_LABEL)
+        dom = J_dom
 
-squ_energies_fig, squ_energies_ax = plt.subplots()
-squ_energies_ax.plot(B_dom, E0_squ_arr[J0_index, :, T0_index], label = r'$|0\rangle$')
-squ_energies_ax.plot(B_dom, E1_squ_arr[J0_index, :, T0_index], label = r'$|-1\rangle$')
-squ_energies_ax.plot(B_dom, E2_squ_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
-squ_energies_ax.plot(B_dom, E3_squ_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
+    ax.set_ylabel(Y)
+    if labels != []:
+        for d, dataset in enumerate(datasets):
+            ax.plot(dom, dataset, label = labels[d])
+        ax.legend()
+    else:
+        for d, dataset in enumerate(datasets):
+            ax.plot(dom, dataset)
 
-squ_energies_ax.set_xlabel(B_LABEL)
-squ_energies_ax.set_ylabel(r"Energy")
-squ_energies_ax.set_title(r"Square Lattice Energy Levels, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
-squ_energies_ax.legend()
+    ax.set_title(title)
+    fig.tight_layout()
+    fig.savefig(folder_path + "/Plots/" + path)
+            
+    plt.close(fig)
 
-cub_energies_fig, cub_energies_ax = plt.subplots()
-cub_energies_ax.plot(B_dom, E0_cub_arr[J0_index, :, T0_index], label = r'$|0\rangle$')
-cub_energies_ax.plot(B_dom, E1_cub_arr[J0_index, :, T0_index], label = r'$|-1\rangle$')
-cub_energies_ax.plot(B_dom, E2_cub_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
-cub_energies_ax.plot(B_dom, E3_cub_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
+### ENERGY LEVELS 
+J0_index = 0
+T0_index = 0
+# Triangular Lattice
+Plot1D("B", "Energy", [E0_tri_arr[J0_index, :, T0_index],
+                       E1_tri_arr[J0_index, :, T0_index],
+                       E2_tri_arr[J0_index, :, T0_index]],
+       ["A", "B", "C"], "TriangularLattice_Energies.jpg")
+# Square Lattice
+Plot1D("B", "Energy", [E0_squ_arr[J0_index, :, T0_index],
+                       E1_squ_arr[J0_index, :, T0_index],
+                       E2_squ_arr[J0_index, :, T0_index],
+                       E3_squ_arr[J0_index, :, T0_index]],
+       ["A", "B", "C", "D"], "SquareLattice_Energies.jpg")
+# Cubic Lattice
+Plot1D("B", "Energy", [E0_cub_arr[J0_index, :, T0_index],
+                       E1_cub_arr[J0_index, :, T0_index],
+                       E2_cub_arr[J0_index, :, T0_index],
+                       E3_cub_arr[J0_index, :, T0_index],
+                       E4_cub_arr[J0_index, :, T0_index],
+                       E5_cub_arr[J0_index, :, T0_index]],
+       ["A", "B", "C", "D", "E", "F"], "CubicLattice_Energies.jpg")
 
-cub_energies_ax.plot(B_dom, E4_cub_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
-cub_energies_ax.plot(B_dom, E5_cub_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
-### LABELS INCORRECT
+### PROBABILITIES
+J0_index = 0
+T0_index = 0
+# Triangular Lattice
+Plot1D("B", "Probability", [p0_tri_arr[J0_index, :, T0_index],
+                            p1_tri_arr[J0_index, :, T0_index],
+                            p2_tri_arr[J0_index, :, T0_index]],
+       ["A", "B", "C"], "TriangularLattice_Probabilities.jpg")
+# Square Lattice
+Plot1D("B", "Probability", [p0_squ_arr[J0_index, :, T0_index],
+                            p1_squ_arr[J0_index, :, T0_index],
+                            p2_squ_arr[J0_index, :, T0_index],
+                            p3_squ_arr[J0_index, :, T0_index]],
+       ["A", "B", "C", "D"], "SquareLattice_Probabilities.jpg")
+# Cubic Lattice
+Plot1D("B", "Probability", [p0_cub_arr[J0_index, :, T0_index],
+                            p1_cub_arr[J0_index, :, T0_index],
+                            p2_cub_arr[J0_index, :, T0_index],
+                            p3_cub_arr[J0_index, :, T0_index],
+                            p4_cub_arr[J0_index, :, T0_index],
+                            p5_cub_arr[J0_index, :, T0_index]],
+       ["A", "B", "C", "D", "E", "F"], "CubicLattice_Probabilities.jpg")
 
-cub_energies_ax.set_xlabel(B_LABEL)
-cub_energies_ax.set_ylabel(r"Energy")
-cub_energies_ax.set_title(r"Cubic Lattice Energy Levels, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
-cub_energies_ax.legend()
+### MAGNETIZATIONS
+# Combined
+Plot1D("B", r"Magnetization $m$", [m_tri_arr[J0_index, :, T0_index],
+                                  m_squ_arr[J0_index, :, T0_index],
+                                  m_cub_arr[J0_index, :, T0_index]],
+       ["Triangular", "Square", "Cubic"], "Magnetizations.jpg")
+# Separate
+Plot1D("B", r"Magnetization $m$", [m_tri_arr[J0_index, :, T0_index]],
+       [], "TriangularLattice_Magnetization.jpg", f"Magnetization m, $J={{{J_dom[J0_index]}}}$, $T={{{T_dom[T0_index]}}}$")
+Plot1D("B", r"Magnetization $m$", [m_squ_arr[J0_index, :, T0_index]],
+       [], "SquareLattice_Magnetization.jpg", f"Magnetization m, $J={{{J_dom[J0_index]}}}$, T=${{{T_dom[T0_index]}}}$")
+Plot1D("B", r"Magnetization $m$", [m_cub_arr[J0_index, :, T0_index]],
+       [], "CubicLattice_Magnetization.jpg", f"Magnetization m, $J={{{J_dom[J0_index]}}}$, $T={{{T_dom[T0_index]}}}$")
 
-# Probabilities
-probs_fig, probs_ax = plt.subplots()
-probs_ax.plot(B_dom, p0_squ_arr[J0_index, :, T0_index], label = r'$|0\rangle$')
-probs_ax.plot(B_dom, p1_squ_arr[J0_index, :, T0_index], label = r'$|-1\rangle$')
-probs_ax.plot(B_dom, p2_squ_arr[J0_index, :, T0_index], label = r'$|1\rangle$')
-probs_ax.plot(B_dom, p3_squ_arr[J0_index, :, T0_index], label = r'$|2\rangle + |-2\rangle$')
-
-probs_ax.set_xlabel(B_LABEL)
-probs_ax.set_ylabel(r"Probability")
-probs_ax.set_title(r"Square State Probabilities, $J = $" + str(J_dom[J0_index]) + r", $T = $" + str(T_dom[T0_index]))
-probs_ax.legend()
-
-# Magnetization
-magn_fig, magn_ax = plt.subplots()
-magn_ax.plot(B_dom, m_tri_arr[J0_index, :, T0_index], label = r"Triangular")
-magn_ax.plot(B_dom, m_squ_arr[J0_index, :, T0_index], label = r"Square")
-magn_ax.plot(B_dom, m_cub_arr[J0_index, :, T0_index], label = r"Cubic")
-
-magn_ax.set_xlabel(B_LABEL)
-magn_ax.set_ylabel(r"Magnetization m")
-magn_ax.set_title(r"Model Magnetizations, $J = $" + str(J_dom[J0_index]) + ", $T = $" + str(T_dom[T0_index]))
-magn_ax.legend()
-
-# Magnetic Susceptibility vs. J
-chi_fig, chi_ax = plt.subplots()
-chi_ax.plot(J_dom, chi_tri_arr[:, B0_index, T0_index], label = r"Triangular")
-chi_ax.plot(J_dom, chi_squ_arr[:, B0_index, T0_index], label = r"Square")
-# chi_ax.plot(J_dom, chi_cub_arr[:, B0_index, T0_index], label = r"Cubic") ### EXCLUDING CUBIC BECAUSE ITS NOT WORKING
-
-chi_ax.set_xlabel(J_LABEL)
-chi_ax.set_ylabel(r"Magnetic Susceptibility $\chi$")
-chi_ax.set_title(r"Model Magnetic Susceptibilities, $B = $" + str(B_dom[B0_index]) + ", $T = $" + str(T_dom[T0_index]))
-chi_ax.legend()
+### MAGNETIC SUSCEPTIBILITY 1D
+B0_index = 0
+# Separate
+Plot1D("J", r"Magnetic Susceptibility $\chi$", [chi_tri_arr[:, B0_index, T0_index]],
+       [], "TriangularLattice_MagneticSusceptibility.jpg",
+       r"Magnetic Susceptibility $\chi = \frac{\partial m}{\partial B}\vert_{B=0}$" + f"$T = {{{T_dom[T0_index]}}}$")
+Plot1D("J", r"Magnetic Susceptibility $\chi$", [chi_squ_arr[:, B0_index, T0_index]],
+       [], "SquareLattice_MagneticSusceptibility.jpg",
+       r"Magnetic Susceptibility $\chi = \frac{\partial m}{\partial B}\vert_{B=0}$" + f"$T = {{{T_dom[T0_index]}}}$")
+Plot1D("J", r"Magnetic Susceptibility $\chi$", [chi_cub_arr[:, B0_index, T0_index]],
+       [], "CubicLattice_MagneticSusceptibility.jpg",
+       r"Magnetic Susceptibility $\chi = \frac{\partial m}{\partial B}\vert_{B=0}$" + f"$T = {{{T_dom[T0_index]}}}$")
 
 # Magnetic Susceptibility J vs B
 chi_fig2, chi_ax2 = plt.subplots(1, 3)
@@ -251,30 +287,66 @@ cubic_tuning_ax[2].set_ylabel(r"y Order Parameter $\langle y \rangle$")
 cubic_tuning_ax[2].set_title(r"$\phi = \pi/4, \theta = \pi/4$")
 
 # Boundary plots
+# Triangular
+tri_boundary_fig, tri_boundary_ax = plt.subplots()
+indices = np.where(tri_boundary_arr == 1)
+
+tri_boundary_ax.set_xlabel(J_LABEL)
+tri_boundary_ax.set_ylabel(B_LABEL)
+
+for t, T in enumerate(T_dom): 
+    J_pts = [indices[0][i] for i in range(len(indices[0])) if indices[2][i] == t]
+    B_pts = [indices[1][i] for i in range(len(indices[0])) if indices[2][i] == t]
+
+    tri_boundary_ax.scatter(J_dom[J_pts], B_dom[B_pts], label = f"$T = {{{T}}}$")
+
+    tri_boundary_ax.legend()
+
+    tri_boundary_fig.tight_layout()
+    tri_boundary_fig.savefig(folder_path + f"/Plots/TriangularBoundary_Figure{t}")
+
+# Square
+squ_boundary_fig, squ_boundary_ax = plt.subplots()
+indices = np.where(squ_boundary_arr == 1)
+
+squ_boundary_ax.set_xlabel(J_LABEL)
+squ_boundary_ax.set_ylabel(B_LABEL)
+
+for t, T in enumerate(T_dom):
+    
+    J_pts = [indices[0][i] for i in range(len(indices[0])) if indices[2][i] == t]
+    B_pts = [indices[1][i] for i in range(len(indices[0])) if indices[2][i] == t]
+
+    squ_boundary_ax.scatter(J_dom[J_pts], B_dom[B_pts], label = f"$T = {{{T}}}$")
+    
+    squ_boundary_ax.legend()
+    
+    squ_boundary_fig.tight_layout()
+    squ_boundary_fig.savefig(folder_path + f"/Plots/SquareBoundary_Figure{t}")
+
+# Cubic
+cub_boundary_fig, cub_boundary_ax = plt.subplots()
+indices = np.where(cub_boundary_arr == 1)
+
+cub_boundary_ax.set_xlabel(J_LABEL)
+cub_boundary_ax.set_ylabel(B_LABEL)
+
+for t, T in enumerate(T_dom):
+    
+    J_pts = [indices[0][i] for i in range(len(indices[0])) if indices[2][i] == t]
+    B_pts = [indices[1][i] for i in range(len(indices[0])) if indices[2][i] == t]
+
+    cub_boundary_ax.scatter(J_dom[J_pts], B_dom[B_pts], label = f"$T = {{{T}}}$")
+
+    cub_boundary_ax.legend()
+
+    cub_boundary_fig.tight_layout()
+    cub_boundary_fig.savefig(folder_path + f"/Plots/CubicBoundary_Figure{t}")
+
+
 
 
 ### SAVE FIGURES
-if not (os.path.isdir(folder_path + "/Plots")):
-    os.mkdir(folder_path + "/Plots")
-
-tri_energies_fig.tight_layout()
-tri_energies_fig.savefig(folder_path + "/Plots/TriangularEnergies_Figure.jpg")
-
-squ_energies_fig.tight_layout()
-squ_energies_fig.savefig(folder_path + "/Plots/SquareEnergies_Figure.jpg")
-
-cub_energies_fig.tight_layout()
-cub_energies_fig.savefig(folder_path + "/Plots/CubicEnergies_Figure.jpg")
-
-
-probs_fig.tight_layout()
-probs_fig.savefig(folder_path + "/Plots/SquareProbabilities_Figure.jpg")
-
-magn_fig.tight_layout()
-magn_fig.savefig(folder_path + "/Plots/Magnetization_Figure.jpg")
-
-chi_fig.tight_layout()
-chi_fig.savefig(folder_path + "/Plots/Susceptibility_Figure.jpg")
 
 order_param_fig.set_size_inches(9,4)
 order_param_fig.tight_layout()
@@ -292,3 +364,4 @@ cub_order_param_fig.savefig(folder_path + "/Plots/CubicOrderParameter_Figure.jpg
 cubic_tuning_fig.set_size_inches(9, 4)
 cubic_tuning_fig.tight_layout()
 cubic_tuning_fig.savefig(folder_path + "/Plots/CubicTuning_Figure.jpg")
+

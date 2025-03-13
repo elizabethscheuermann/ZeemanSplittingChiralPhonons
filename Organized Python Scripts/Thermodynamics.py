@@ -83,13 +83,13 @@ for b, B in enumerate(B_dom):
     for t, T in enumerate(T_dom):
         # Phase Boundary
         tri_j = np.argmax(np.gradient(O_tri_Arr[:, b, t], J_dom[1] - J_dom[0]))
-        tri_phase_bound.append([j, b, t])
+        tri_phase_bound.append([tri_j, b, t])
 
         squ_j = np.argmax(np.gradient(O_squ_Arr[:, b, t], J_dom[1] - J_dom[0]))
-        squ_phase_bound.append([j, b, t])
+        squ_phase_bound.append([squ_j, b, t])
 
         cub_j = np.argmax(np.gradient(O_cub_Arr[:, b, t], J_dom[1] - J_dom[0]))
-        cub_phase_bound.append([j, b, t])
+        cub_phase_bound.append([cub_j,b,t])
 
 
 
@@ -153,7 +153,7 @@ with open(cub_data_filepath, 'w') as cub:
                 line = str(J) + ", " + str(B) + ", " + str(T) + ", " + str(O_cub_Arr[j,b,t])
                 line += ", " + str(m_cub_Arr[j,b,t]) + ", " + str(chi_cub_Arr[j,b,t]) 
                 line += ", " + str(E_cub_Arr[j,b,t][0]) + ", " + str(E_cub_Arr[j,b,t][1]) + ", " + str(E_cub_Arr[j,b,t][2]) + ", " + str(E_cub_Arr[j,b,t][3]) + ", " + str(E_cub_Arr[j,b,t][4]) + ", " + str(E_cub_Arr[j,b,t][5])
-                line += ", " + str(p_cub_Arr[j,b,t][0]) + ", " + str(p_cub_Arr[j,b,t][1]) + ", " + str(p_cub_Arr[j,b,t][2]) + ", " + str(p_cub_Arr[j,b,t][3]) + ", " + str(p_cub_Arr[j,b,t][4]) + ", " + str(p_cub_Arr[j,b,t][5]) + "\n"
+                line += ", " + str(p_cub_Arr[j,b,t][0]) + ", " + str(p_cub_Arr[j,b,t][1]) + ", " + str(p_cub_Arr[j,b,t][2]) + ", " + str(p_cub_Arr[j,b,t][3]) + ", " + str(p_cub_Arr[j,b,t][4]) + ", " + str(p_cub_Arr[j,b,t][5])
                 if [j, b, t] in cub_phase_bound:
                     line+= ", 1 \n"
                 else:
