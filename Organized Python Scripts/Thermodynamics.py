@@ -8,10 +8,10 @@ import json
 
 ### CALCULATIONS
 # Parameters
-B_min, B_max, B_n = 0, 5, 16
+B_min, B_max, B_n = 0, 5, 64
 B_dom = np.linspace(B_min, B_max, B_n)
 
-J_min, J_max, J_n = 1e-1, 2, 16
+J_min, J_max, J_n = 1e-1, 2, 64
 J_dom = np.linspace(J_min, J_max, J_n)
 
 T_min, T_max, T_n = 0, 2, 5
