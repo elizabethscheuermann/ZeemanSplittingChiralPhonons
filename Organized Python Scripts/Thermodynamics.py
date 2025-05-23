@@ -69,7 +69,6 @@ for j, J in enumerate(J_dom):
             m_tri_Arr[j, b, t] = M_MF_tri(O_tri.x, J, B, T)
             m_squ_Arr[j, b, t] = M_MF_squ(O_squ.x, J, B, T)
             m_cub_Arr[j, b, t] = M_MF_cub(O_cub.x, J, [0, 0, B], T)
-            #print(M_MF_cub(O_cub.x, J, [0,0,B], T))
         
         
     for t, T in enumerate(T_dom):

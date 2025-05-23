@@ -3,6 +3,25 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 
+### GENERALIZED GELLMANN MATRICES
+def GeneralizedGellMannMatrix(dim, coefs):
+    if len(coefs) != dim**2 - 1:
+        print(r"Must have $n^2 - 1$ coefficients")
+    else:
+        operator = np.zeros((dim,dim), dtype = complex)
+        ix, iy = np.triu_indices(dim, k=1)
+        K = int(.5 * dim * (dim - 1))
+        operator[ix, iy] = coefs[0:K] + 1j * coefs[K:2*K]
+        operator[iy,ix] = coefs[0:K] - 1j * coefs[K:2*K]
+
+        for i in range(dim-1):
+            operator[i+1,i+1] -= np.sqrt(2/((i+1)*(i+2)))*coefs[2*K + i]*(i+1)
+            for j in range(i+1):
+                operator[j][j] += np.sqrt(2/((i+1)*(i+2)))*coefs[2*K + i]
+
+    return operator
+
+
 ### TRIANGULAR LATTICE
 x_tri = np.diag([1, -.5, -.5]) # x operator
 y_tri = np.diag([0, np.sqrt(3)/2, -np.sqrt(3)/2]) # y operator
@@ -34,6 +53,113 @@ def M_MF_tri(O, J, B, T):
     return m
 x0_tri = [1e-2, 1e-1]
 
+# Phonon Dynamics Equation
+def DE_MF_tri(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
+    # Get commutators
+    h0_comm = h0_tri @ operator - operator @ h0_tri
+    Lz_comm = Lz_tri @ operator - operator @ Lz_tri
+    x_comm = x_tri @ operator - operator @ x_tri
+    y_comm = y_tri @ operator - operator @ y_tri
+
+    # Dynamics Equation
+    d_eq = h0_comm + B * Lz_comm - J * q_tri * (x_exp * x_comm + y_exp * y_comm) - J * Q * (comm_x_op_exp * x_tri + comm_y_op_exp * y_tri)
+
+    return d_eq
+
+gmm_tri = [[[0, 1, 0], # x matrices
+            [1, 0, 0],
+            [0, 0, 0]
+            ],
+            [[0, 0, 1],
+            [0, 0, 0],
+            [1, 0, 0]
+             ],
+            [[0, 0, 0],
+            [0, 0, 1],
+            [0, 1, 0]
+             ],
+            [[0, 1j, 0], # y matrices
+            [-1j, 0, 0],
+            [0, 0, 0]
+             ],
+            [[0, 0, 1j],
+            [0, 0, 0],
+            [-1j, 0, 0]
+             ],
+            [[0, 0, 0],
+            [0, 0, 1j],
+            [0, -1j, 0]
+             ],
+            [[1, 0, 0], # z matrices
+            [0, -1, 0],
+            [0, 0, 0]
+             ],
+            [[1/np.sqrt(3), 0, 0],
+            [0, 1/np.sqrt(3), 0],
+            [0, 0, -2/np.sqrt(3)]
+             ]
+        ]
+
+# Phonon Dynamics Loop
+def PD_MF_tri(O, J, B, T, Q):
+    # Get states and probabilities
+    vals, vecs = np.linalg.eigh(H_MF_tri(O, J, B))
+
+    # Sort
+    ids = vals.argsort()
+    vals = vals[ids]
+    vecs = vecs[:, ids]
+    probs = np.exp(-1 * vals/T)/Z_MF_tri(O,J,B, T) if T!=0 else [1,0,0]
+
+    # Evaluate <x>, <y>
+    x_exp = 0
+    y_exp = 0
+    for i in range(3):
+        x_exp += probs[i] * np.real(np.conj(vecs[:, i]).T @ x_tri @ vecs[:, i])
+        y_exp += probs[i] * np.real(np.conj(vecs[:, i]).T @ y_tri @ vecs[:, i])
+
+    # Dynamics Matrix
+    D = np.zeros((8,8), dtype = complex)
+
+    # Loop over matrices
+    for i in range(8):
+        op1 = gmm_tri[i]
+
+        # Evaluate <[x, L]>, <[y,L]>
+        comm_x_op_exp = 0
+        comm_y_op_exp = 0
+        for j in range(3):
+            comm_x_op_exp += probs[j]*np.conj(vecs[:, j]).T @ (x_tri @ op1 - op1 @ x_tri) @ vecs[:,j]
+            comm_y_op_exp += probs[j]*np.conj(vecs[:, j]).T @ (y_tri @ op1 - op1 @ y_tri) @ vecs[:,j]
+
+        # Get Dynamics Equation
+        d_eq = DE_MF_tri(op1, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q)
+
+        # Fill Dynamics Matrix
+        for j in range(8):
+            op2 = gmm_tri[j]
+
+            D[j,i] = np.trace(d_eq @ op2)/3
+
+        # Solve system
+        op_freqs, op_vecs = np.linalg.eig(D)
+
+        # Get positive frequencies
+        ids = op_freqs.argsort()[::-1]
+        op_freqs = op_freqs[ids][:3]
+        op_vecs = op_vecs[:, ids][:, :3]
+
+        # Get norms to ground state
+        op_norms = []
+        for i in range(len(op_freqs)):
+            op = np.zeros((3,3), dtype = complex)
+            for j in range(8):
+                op = op + op_vecs[j, i] * np.array(gmm_tri[j])
+            
+            op_norms.append(np.conjugate(op @ vecs[:,0]).T @ op @ vecs[:,0])
+
+    return op_freqs, op_norms
+
 ### SQUARE LATTICE
 x_squ = np.diag([1, 0, -1, 0]) # x operator
 y_squ = np.diag([0, 1, 0, -1]) # y operator
@@ -62,6 +188,161 @@ def M_MF_squ(O, J, B, T):
         m -= probs[i] * np.conj(vecs[:, i]).T @ Lz_squ @ vecs[:, i]
 
     return m
+
+# Phonon Dynamics Equation
+def DE_MF_squ(operator, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q):
+    # Get commutators
+    h0_comm = h0_squ @ operator - operator @ h0_squ
+    Lz_comm = Lz_squ @ operator - operator @ Lz_squ
+    x_comm = x_squ @ operator - operator @ x_squ
+    y_comm = y_squ @ operator - operator @ y_squ
+
+    # Dynamics Equation
+    d_eq = h0_comm + B * Lz_comm - J * q_squ * (x_exp * x_comm + y_exp * y_comm) - J * Q * (comm_x_op_exp * x_squ + comm_y_op_exp * y_squ)
+
+    return d_eq
+
+# GGMM
+gmm_squ = [
+            [[0, 1, 0, 0], # x matrices
+             [1, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, 0]
+            ],
+            [[0, 0, 1, 0],
+             [0, 0, 0, 0],
+             [1, 0, 0, 0],
+             [0, 0, 0, 0]
+            ],
+            [[0, 0, 0, 1],
+             [0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [1, 0, 0, 0]
+            ],
+            [[0, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+            ],
+            [[0, 0, 0, 0],
+             [0, 0, 0, 1],
+             [0, 0, 0, 0],
+             [0, 1, 0, 0]
+            ],
+            [[0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, 1],
+             [0, 0, 1, 0]
+            ],
+            [[0, 1j, 0, 0], # y matrices
+            [-1j, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+            ],
+            [[0, 0, 1j, 0],
+            [0, 0, 0, 0],
+            [-1j, 0, 0, 0],
+            [0, 0, 0, 0]
+            ],
+            [[0, 0, 0, 1j],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [-1j, 0, 0, 0]
+            ],
+            [[0, 0, 0, 0],
+            [0, 0, 1j, 0],
+            [0, -1j, 0, 0],
+            [0, 0, 0, 0]
+            ],
+            [[0, 0, 0, 0],
+            [0, 0, 0, 1j],
+            [0, 0, 0, 0],
+            [0, -1j, 0, 0]
+            ],
+            [[0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 1j],
+            [0, 0, -1j, 0]
+            ],
+            [[1, 0, 0, 0], # z matrices
+            [0, -1, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+            ],
+            [[1/np.sqrt(3), 0, 0, 0],
+            [0, 1/np.sqrt(3), 0, 0],
+            [0, 0, -2/np.sqrt(3), 0],
+            [0, 0, 0, 0]
+            ],
+            [[1/np.sqrt(6), 0, 0, 0],
+            [0, 1/np.sqrt(6), 0, 0],
+            [0, 0, 1/np.sqrt(6), 0],
+            [0, 0, 0, -3/np.sqrt(6)]
+            ]
+ ]
+
+
+
+# Phonon Dynamics Loop
+def PD_MF_squ(O, J, B, T, Q):
+    # Get states and probabilities
+    vals, vecs = np.linalg.eigh(H_MF_squ(O, J, B))
+
+    # Sort
+    ids = vals.argsort()
+    vals = vals[ids]
+    vecs = vecs[:, ids]
+    probs = np.exp(-1 * vals/T)/Z_MF_squ(O,J,B, T) if T!=0 else [1,0,0,0]
+
+    # Evaluate <x>, <y>
+    x_exp = 0
+    y_exp = 0
+    for i in range(4):
+        x_exp += probs[i] * np.real(np.conj(vecs[:, i]).T @ x_squ @ vecs[:, i])
+        y_exp += probs[i] * np.real(np.conj(vecs[:, i]).T @ y_squ @ vecs[:, i])
+
+    # Dynamics Matrix
+    D = np.zeros((15,15), dtype = complex)
+
+    # Loop over matrices
+    for i in range(15):
+        op1 = gmm_squ[i]
+
+        # Evaluate <[x, L]>, <[y,L]>
+        comm_x_op_exp = 0
+        comm_y_op_exp = 0
+        for j in range(4):
+            comm_x_op_exp += probs[j]*np.conj(vecs[:, j]).T @ (x_squ @ op1 - op1 @ x_squ) @ vecs[:,j]
+            comm_y_op_exp += probs[j]*np.conj(vecs[:, j]).T @ (y_squ @ op1 - op1 @ y_squ) @ vecs[:,j]
+
+        # Get Dynamics Equation
+        d_eq = DE_MF_squ(op1, J, B, x_exp, y_exp, comm_x_op_exp, comm_y_op_exp, Q)
+
+        # Fill Dynamics Matrix
+        for j in range(15):
+            op2 = gmm_squ[j]
+
+            D[j,i] = np.trace(d_eq @ op2)/4
+
+        # Solve system
+        op_freqs, op_vecs = np.linalg.eig(D)
+
+        # Get positive frequencies
+        ids = op_freqs.argsort()[::-1]
+        op_freqs = op_freqs[ids][:6]
+        op_vecs = op_vecs[:, ids][:, :6]
+
+        # Get norms to ground state
+        op_norms = []
+        for i in range(len(op_freqs)):
+            op = np.zeros((4,4), dtype = complex)
+            for j in range(15):
+                op = op + op_vecs[j, i] * np.array(gmm_squ[j])
+            
+            op_norms.append(np.conjugate(op @ vecs[:,0]).T @ op @ vecs[:,0])
+
+    return op_freqs, op_norms
+
 
 ### CUBIC LATTICE
 x_cub = np.diag([1, 0, 0, -1, 0, 0]) # x operator
