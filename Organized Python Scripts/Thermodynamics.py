@@ -11,11 +11,14 @@ import json
 B_min, B_max, B_n = 0, 5, 64
 B_dom = np.linspace(B_min, B_max, B_n)
 
-J_min, J_max, J_n = 1e-1, 2, 64
+J_min, J_max, J_n = 2e-1, 1, 64
 J_dom = np.linspace(J_min, J_max, J_n)
 
 T_min, T_max, T_n = 0, 2, 5
 T_dom = np.linspace(T_min, T_max, T_n)
+
+Q_tri = 1
+Q_squ = 1
 
 # Data Arrays
 O_tri_Arr = np.zeros((J_n, B_n, T_n))
@@ -37,6 +40,10 @@ m_cub_Arr = np.zeros((J_n, B_n, T_n))
 chi_tri_Arr = np.zeros((J_n, B_n, T_n))
 chi_squ_Arr = np.zeros((J_n, B_n, T_n))
 chi_cub_Arr = np.zeros((J_n, B_n, T_n))
+
+freq_tri_Arr = np.zeros((J_n, B_n, T_n, 2))
+freq_squ_Arr = np.zeros((J_n, B_n, T_n, 3))
+
 
 squ_phase_bound = []
 tri_phase_bound = []
@@ -70,7 +77,10 @@ for j, J in enumerate(J_dom):
             m_squ_Arr[j, b, t] = M_MF_squ(O_squ.x, J, B, T)
             m_cub_Arr[j, b, t] = M_MF_cub(O_cub.x, J, [0, 0, B], T)
         
-        
+            # Phonon Dynamics
+            freq_tri_Arr[j, b, t, :] = PD_MF_tri(O_tri.x, J, B, T, Q_tri)
+            freq_squ_Arr[j, b, t, :] = PD_MF_squ(O_squ.x, J, B, T, Q_squ)
+
     for t, T in enumerate(T_dom):
         # Magnetic Susceptibility
         chi_tri_Arr[j, :, t] = np.gradient(m_tri_Arr[j, :, t], B_dom[1] - B_dom[0])
@@ -89,7 +99,6 @@ for b, B in enumerate(B_dom):
 
         cub_j = np.argmax(np.gradient(O_cub_Arr[:, b, t], J_dom[1] - J_dom[0]))
         cub_phase_bound.append([cub_j,b,t])
-
 
 
 ### WRITE TO FILES
@@ -111,7 +120,7 @@ cub_data_filepath = "Data Runs/" + folder_path + "/CubicLattice_Data.csv"
 
 # Triangular Write Loop
 with open(tri_data_filepath, 'w') as tri:
-    tri.write("J, B, T, O, m, chi, E0, E1, E2, p0, p1, p2, boundary \n")
+    tri.write("J, B, T, O, m, chi, E0, E1, E2, p0, p1, p2, w1, w2, boundary \n")
     for j, J in enumerate(J_dom):
         for b, B in enumerate(B_dom):
             for t, T in enumerate(T_dom):
@@ -119,6 +128,7 @@ with open(tri_data_filepath, 'w') as tri:
                 line += ", " + str(m_tri_Arr[j,b,t]) + ", " + str(chi_tri_Arr[j,b,t]) 
                 line += ", " + str(E_tri_Arr[j,b,t][0]) + ", " + str(E_tri_Arr[j,b,t][1]) + ", " + str(E_tri_Arr[j,b,t][2])
                 line += ", " + str(p_tri_Arr[j,b,t][0]) + ", " + str(p_tri_Arr[j,b,t][1]) + ", " + str(p_tri_Arr[j,b,t][2])
+                line += ", " + str(freq_tri_Arr[j,b,t][0]) + ", " + str(freq_tri_Arr[j,b,t][1])
                 if [j, b, t] in tri_phase_bound:
                     line+= ", 1 \n"
                 else:
@@ -128,7 +138,7 @@ with open(tri_data_filepath, 'w') as tri:
 
 # Square Write Loop
 with open(squ_data_filepath, 'w') as squ:
-    squ.write("J, B, T, O, m, chi, E0, E1, E2, E3, p0, p1, p2, p3, boundary \n")
+    squ.write("J, B, T, O, m, chi, E0, E1, E2, E3, p0, p1, p2, p3, w1, w2, w3, w4, w5, w6, boundary \n")
     for j, J in enumerate(J_dom):
         for b, B in enumerate(B_dom):
             for t, T in enumerate(T_dom):
@@ -136,6 +146,8 @@ with open(squ_data_filepath, 'w') as squ:
                 line += ", " + str(m_squ_Arr[j,b,t]) + ", " + str(chi_squ_Arr[j,b,t]) 
                 line += ", " + str(E_squ_Arr[j,b,t][0]) + ", " + str(E_squ_Arr[j,b,t][1]) + ", " + str(E_squ_Arr[j,b,t][2]) + ", " + str(E_squ_Arr[j,b,t][3])
                 line += ", " + str(p_squ_Arr[j,b,t][0]) + ", " + str(p_squ_Arr[j,b,t][1]) + ", " + str(p_squ_Arr[j,b,t][2]) + ", " + str(p_squ_Arr[j,b,t][3])
+                line += ", " + str(freq_squ_Arr[j,b,t][0]) + ", " + str(freq_squ_Arr[j,b,t][1]) +", " + str(freq_squ_Arr[j,b,t][2])
+
                 if [j, b, t] in squ_phase_bound:
                     line+= ", 1 \n"
                 else:

@@ -158,7 +158,13 @@ def PD_MF_tri(O, J, B, T, Q):
             
             op_norms.append(np.conjugate(op @ vecs[:,0]).T @ op @ vecs[:,0])
 
-    return op_freqs, op_norms
+        # Sort by norms
+        ids = np.array(op_norms).argsort()[::-1]
+        op_freqs = op_freqs[ids][:2]
+        #op_norms = op_norms[ids][:2]
+        
+
+    return op_freqs
 
 ### SQUARE LATTICE
 x_squ = np.diag([1, 0, -1, 0]) # x operator
@@ -281,8 +287,6 @@ gmm_squ = [
             ]
  ]
 
-
-
 # Phonon Dynamics Loop
 def PD_MF_squ(O, J, B, T, Q):
     # Get states and probabilities
@@ -341,7 +345,15 @@ def PD_MF_squ(O, J, B, T, Q):
             
             op_norms.append(np.conjugate(op @ vecs[:,0]).T @ op @ vecs[:,0])
 
-    return op_freqs, op_norms
+        # Sort by norms
+        ids = np.array(op_norms).argsort()[::-1]
+        op_freqs = op_freqs[ids][:3]
+        #op_norms = op_norms[ids][:3]
+
+        # Then sort by frequency again
+        ids = op_freqs.argsort()
+        op_freqs = op_freqs[ids]
+    return op_freqs
 
 
 ### CUBIC LATTICE

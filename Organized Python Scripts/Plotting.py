@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from Base import *
 
-folder_path = "Data Runs/T=[0,2,5], B=[0,5,64], J=[0.1,2,64]/"
+folder_path = "Data Runs/T=0, B=[0,5,16], J=[0.2,1,2]/"
 
 if not (os.path.isdir(folder_path +"/Plots")):
     os.mkdir(folder_path + "/Plots")
@@ -37,7 +37,10 @@ p0_tri_arr = np.reshape(tri_data.T[9], (params["J_n"], params["B_n"], params["T_
 p1_tri_arr = np.reshape(tri_data.T[10], (params["J_n"], params["B_n"], params["T_n"]))
 p2_tri_arr = np.reshape(tri_data.T[11], (params["J_n"], params["B_n"], params["T_n"]))
 
-tri_boundary_arr = np.reshape(tri_data.T[12], (params["J_n"], params["B_n"], params["T_n"]))
+w1_tri_arr = np.reshape(tri_data.T[12], (params["J_n"], params["B_n"], params["T_n"]))
+w2_tri_arr = np.reshape(tri_data.T[13], (params["J_n"], params["B_n"], params["T_n"]))
+
+tri_boundary_arr = np.reshape(tri_data.T[14], (params["J_n"], params["B_n"], params["T_n"]))
 
 # Square Lattice
 squ_data = np.loadtxt(folder_path + "SquareLattice_Data.csv", delimiter = ",", skiprows = 1)
@@ -55,7 +58,15 @@ p1_squ_arr = np.reshape(squ_data.T[11], (params["J_n"], params["B_n"], params["T
 p2_squ_arr = np.reshape(squ_data.T[12], (params["J_n"], params["B_n"], params["T_n"]))
 p3_squ_arr = np.reshape(squ_data.T[13], (params["J_n"], params["B_n"], params["T_n"]))
 
-squ_boundary_arr = np.reshape(squ_data.T[14], (params["J_n"], params["B_n"], params["T_n"]))
+
+w1_squ_arr = np.reshape(squ_data.T[14], (params["J_n"], params["B_n"], params["T_n"]))
+w2_squ_arr = np.reshape(squ_data.T[15], (params["J_n"], params["B_n"], params["T_n"]))
+w3_squ_arr = np.reshape(squ_data.T[16], (params["J_n"], params["B_n"], params["T_n"]))
+#w4_squ_arr = np.reshape(squ_data.T[17], (params["J_n"], params["B_n"], params["T_n"]))
+#w5_squ_arr = np.reshape(squ_data.T[18], (params["J_n"], params["B_n"], params["T_n"]))
+#w6_squ_arr = np.reshape(squ_data.T[19], (params["J_n"], params["B_n"], params["T_n"]))
+
+squ_boundary_arr = np.reshape(squ_data.T[17], (params["J_n"], params["B_n"], params["T_n"]))
 
 # Cubic Lattice
 cub_data = np.loadtxt(folder_path + "CubicLattice_Data.csv", delimiter = ",", skiprows = 1)
@@ -221,6 +232,16 @@ Plot1D("J", r"Magnetic Susceptibility $\chi$", [chi_squ_arr[:, B0_index, T0_inde
 Plot1D("J", r"Magnetic Susceptibility $\chi$", [chi_cub_arr[:, B0_index, T0_index]],
        [], "CubicLattice_MagneticSusceptibility.jpg",
        r"Magnetic Susceptibility $\chi = \frac{\partial m}{\partial B}\vert_{B=0}$" + f"$T = {{{T_dom[T0_index]}}}$")
+
+### PHONON DYNAMICS 1D
+J0_index = 0
+Plot1D("B", r"Phonon Frequency $\omega$", [w1_squ_arr[J0_index, :, T0_index],
+                                           w2_squ_arr[J0_index, :, T0_index],
+                                           w3_squ_arr[J0_index, :, T0_index]],
+                                           #w4_squ_arr[J0_index, :, T0_index],
+                                           #w5_squ_arr[J0_index, :, T0_index],
+                                           #w6_squ_arr[J0_index, :, T0_index]],
+       [], "SquareLattice_PhononDynamics.jpg")
 
 ### 2D PLOTS
 # Magnetization
