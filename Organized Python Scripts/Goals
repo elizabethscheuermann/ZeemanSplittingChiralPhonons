@@ -1,7 +1,0 @@
-1. Sort out all plots
-  - Weird cubic behavior but looks fine
-  - Smoothing contour plots
-  - Phonon Dynamics plot
-
-2. Fix Phonon Dynamics
-  - Weird crossing at fixed magnetic field point
