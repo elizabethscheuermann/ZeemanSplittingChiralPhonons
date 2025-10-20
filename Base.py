@@ -15,6 +15,7 @@ def GeneralizedGellMannMatrix(dim, coefs):
         operator[iy,ix] = coefs[0:K] - 1j * coefs[K:2*K]
 
         for i in range(dim-1):
+
             operator[i+1,i+1] -= np.sqrt(2/((i+1)*(i+2)))*coefs[2*K + i]*(i+1)
             for j in range(i+1):
                 operator[j][j] += np.sqrt(2/((i+1)*(i+2)))*coefs[2*K + i]
