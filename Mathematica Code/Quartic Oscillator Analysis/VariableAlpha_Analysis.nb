@@ -1,0 +1,327 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 14.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     12962,        319]
+NotebookOptionsPosition[     12369,        301]
+NotebookOutlinePosition[     12783,        317]
+CellTagsIndexPosition[     12740,        314]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"\[ScriptCapitalH]", "[", 
+   RowBox[{
+   "\[Alpha]_", ",", "\[Beta]_", ",", "\[CapitalDelta]_", ",", "ml_"}], "]"}],
+   ":=", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"-", 
+     FractionBox["1", "2"]}], 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Psi]", "''"}], "[", "r", "]"}], "+", 
+      RowBox[{
+       FractionBox["1", "r"], 
+       RowBox[{
+        RowBox[{"\[Psi]", "'"}], "[", "r", "]"}]}], "-", 
+      RowBox[{
+       FractionBox[
+        SuperscriptBox["ml", "2"], 
+        SuperscriptBox["r", "2"]], 
+       RowBox[{"\[Psi]", "[", "r", "]"}]}]}], ")"}]}], "+", 
+   RowBox[{
+    FractionBox["1", "2"], "\[Alpha]", "*", 
+    SuperscriptBox["r", "2"], "*", 
+    RowBox[{"\[Psi]", "[", "r", "]"}]}], "+", 
+   RowBox[{"\[Beta]", "*", 
+    SuperscriptBox["r", "4"], "*", 
+    RowBox[{"\[Psi]", "[", "r", "]"}]}], "-", 
+   RowBox[{"\[CapitalDelta]", "*", "ml", "*", 
+    RowBox[{"\[Psi]", "[", "r", "]"}]}]}]}], "\[IndentingNewLine]", 
+ RowBox[{"numstates", " ", ":=", "20"}], "\[IndentingNewLine]", 
+ RowBox[{"\[CapitalDelta]", ":=", "0"}], "\[IndentingNewLine]", 
+ RowBox[{"\[Omega]0", ":=", 
+  RowBox[{"1", "I"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"minalpha", ":=", ".001"}], ";", " ", 
+  RowBox[{"maxalpha", ":=", ".01"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"steps", ":=", "50"}], "\[IndentingNewLine]", 
+ RowBox[{"d\[Alpha]", ":=", 
+  FractionBox[
+   RowBox[{"maxalpha", "-", "minalpha"}], "steps"]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"minml", ":=", 
+   RowBox[{"-", "5"}]}], ";", " ", 
+  RowBox[{"maxml", ":=", "5"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"energies", ":=", 
+  RowBox[{"{", "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Monitor", "[", 
+   RowBox[{
+    RowBox[{"For", "[", 
+     RowBox[{
+      RowBox[{"\[Alpha]", "=", "minalpha"}], ",", " ", 
+      RowBox[{"\[Alpha]", "<=", "maxalpha"}], ",", " ", 
+      RowBox[{"\[Alpha]", "=", 
+       RowBox[{"\[Alpha]", "+", "d\[Alpha]"}]}], ",", "\[IndentingNewLine]", 
+      "\t", 
+      RowBox[{"For", "[", 
+       RowBox[{
+        RowBox[{"ml", "=", "minml"}], ",", " ", 
+        RowBox[{"ml", "<=", "maxml"}], ",", " ", 
+        RowBox[{"ml", "++"}], ",", "\[IndentingNewLine]", "\t", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"vals", ",", " ", "funcs"}], "}"}], " ", "=", 
+          RowBox[{"NDEigensystem", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"\[ScriptCapitalH]", "[", 
+              RowBox[{
+               RowBox[{
+                SuperscriptBox["\[Omega]0", "2"], "+", 
+                SuperscriptBox["\[CapitalDelta]", "2"]}], ",", "\[Alpha]", 
+               ",", "\[CapitalDelta]", ",", "ml"}], "]"}], "}"}], ",", 
+            RowBox[{"\[Psi]", "[", "r", "]"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"r", ",", "0", ",", 
+              RowBox[{"5", 
+               SqrtBox[
+                FractionBox[
+                 RowBox[{"-", 
+                  RowBox[{"(", 
+                   RowBox[{
+                    SuperscriptBox["\[Omega]0", "2"], "+", 
+                    SuperscriptBox["\[CapitalDelta]", "2"]}], ")"}]}], 
+                 RowBox[{"4", "*", "\[Alpha]"}]]]}]}], "}"}], ",", 
+            "numstates"}], "]"}]}], ";", "\[IndentingNewLine]", "\t", 
+         RowBox[{"data", " ", "=", 
+          RowBox[{"{", 
+           RowBox[{"vals", ",", "funcs"}], "}"}]}], ";", 
+         "\[IndentingNewLine]", "\t", 
+         RowBox[{"data", "=", 
+          RowBox[{"data", "[", 
+           RowBox[{"[", 
+            RowBox[{"All", ",", 
+             RowBox[{"Ordering", "@", 
+              RowBox[{"First", "@", "data"}]}]}], "]"}], "]"}]}], ";", 
+         "\[IndentingNewLine]", "\t", 
+         RowBox[{"For", "[", 
+          RowBox[{
+           RowBox[{"i", "=", "1"}], ",", 
+           RowBox[{"i", "<=", "6"}], ",", 
+           RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", "\t", 
+           RowBox[{"AppendTo", "[", 
+            RowBox[{"energies", ",", 
+             RowBox[{"{", 
+              RowBox[{"i", ",", "ml", ",", 
+               RowBox[{"N", "[", "\[Alpha]", "]"}], ",", 
+               RowBox[{
+                RowBox[{"data", "[", 
+                 RowBox[{"[", "1", "]"}], "]"}], "[", 
+                RowBox[{"[", "i", "]"}], "]"}]}], "}"}]}], "]"}]}], 
+          "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", "]"}]}], 
+     "\[IndentingNewLine]", "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Alpha]", ",", "ml"}], "}"}]}], "]"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"energies", " ", "=", " ", 
+   RowBox[{"Prepend", "[", 
+    RowBox[{"energies", ",", " ", 
+     RowBox[{"StringJoin", "[", 
+      RowBox[{"\"\<MaxAlpha: \>\"", ",", 
+       RowBox[{"ToString", "[", "maxalpha", "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"energies", " ", "=", " ", 
+   RowBox[{"Prepend", "[", 
+    RowBox[{"energies", ",", " ", 
+     RowBox[{"StringJoin", "[", 
+      RowBox[{"\"\<MinAlpha: \>\"", ",", 
+       RowBox[{"ToString", "[", "minalpha", "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"energies", " ", "=", " ", 
+   RowBox[{"Prepend", "[", 
+    RowBox[{"energies", ",", " ", 
+     RowBox[{"StringJoin", "[", 
+      RowBox[{"\"\<MaxN: \>\"", ",", 
+       RowBox[{"ToString", "[", "numstates", "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"energies", " ", "=", " ", 
+   RowBox[{"Prepend", "[", 
+    RowBox[{"energies", ",", " ", 
+     RowBox[{"StringJoin", "[", 
+      RowBox[{"\"\<w0: \>\"", ",", 
+       RowBox[{"ToString", "[", 
+        RowBox[{"N", "[", "\[Omega]0", "]"}], "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"energies", " ", "=", " ", 
+   RowBox[{"Prepend", "[", 
+    RowBox[{"energies", ",", " ", 
+     RowBox[{"StringJoin", "[", 
+      RowBox[{"\"\<Delta: \>\"", ",", 
+       RowBox[{"ToString", "[", "\[CapitalDelta]", "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"energies", " ", "=", " ", 
+  RowBox[{"Prepend", "[", 
+   RowBox[{"energies", ",", " ", 
+    RowBox[{"StringJoin", "[", 
+     RowBox[{"\"\<RunType: \>\"", ",", " ", "\"\<VariableAlpha\>\""}], 
+     "]"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"Export", "[", 
+  RowBox[{
+  "\"\<D:\\\\Research\\\\Phonon Dipole Coupling\\\\Mathematica \
+Code\\\\VariableAlpha_analysis.txt\>\"", ",", "energies"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.926165612672689*^9, 3.9261656983042126`*^9}, 
+   3.926165802044913*^9, {3.9261658506381207`*^9, 3.9261658778237324`*^9}, {
+   3.9261660376194077`*^9, 3.92616604041975*^9}, {3.926170322120535*^9, 
+   3.9261703313287125`*^9}, {3.926171896042458*^9, 3.926171899887789*^9}, {
+   3.926174557114104*^9, 3.9261745640600605`*^9}, {3.926174615532081*^9, 
+   3.9261746167222214`*^9}, {3.9264263492166023`*^9, 3.926426369658813*^9}, {
+   3.9264315865897465`*^9, 3.926431699862952*^9}, {3.9264317523763123`*^9, 
+   3.9264317749846992`*^9}, {3.926431924321312*^9, 3.926431951084656*^9}, {
+   3.926432016138014*^9, 3.926432017273643*^9}, 3.9264324477914257`*^9, {
+   3.926432575187334*^9, 3.9264325755332165`*^9}, {3.926432675940016*^9, 
+   3.926432689117222*^9}, {3.9265064157796*^9, 3.926506418583971*^9}, {
+   3.926506990945884*^9, 3.9265070135310116`*^9}, {3.926514141847471*^9, 
+   3.926514145611653*^9}, {3.9265153682484436`*^9, 3.926515368767374*^9}, {
+   3.926515521568342*^9, 3.926515604368757*^9}, {3.926681401282881*^9, 
+   3.926681403441452*^9}},ExpressionUUID->"2eb65a73-b201-0848-858e-\
+2ed2d116a408"],
+
+Cell[BoxData[
+ TemplateBox[<|"shortenedBoxes" -> TagBox[
+     RowBox[{"{", 
+       RowBox[{
+        "\"RunType: VariableAlpha\"", ",", "\"Delta: 0\"", ",", 
+         "\"w0: 0. + 1. I\"", ",", "\"MaxN: 20\"", ",", "\"MinAlpha: 0.001\"",
+          ",", "\"MaxAlpha: 0.01\"", ",", 
+         RowBox[{"{", 
+           RowBox[{"1", ",", 
+             RowBox[{"-", "5"}], ",", "0.001`", ",", 
+             RowBox[{"-", "61.718406348674236`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"2", ",", 
+             RowBox[{"-", "5"}], ",", "0.001`", ",", 
+             RowBox[{"-", "58.28686980460141`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"3", ",", 
+             RowBox[{"-", "5"}], ",", "0.001`", ",", 
+             RowBox[{"-", "56.728129154582746`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"4", ",", 
+             RowBox[{"-", "5"}], ",", "0.001`", ",", 
+             RowBox[{"-", "49.66383237971469`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"5", ",", 
+             RowBox[{"-", "5"}], ",", "0.001`", ",", 
+             RowBox[{"-", "41.38035818357211`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"6", ",", 
+             RowBox[{"-", "5"}], ",", "0.001`", ",", 
+             RowBox[{"-", "38.538384125776325`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"1", ",", 
+             RowBox[{"-", "4"}], ",", "0.001`", ",", 
+             RowBox[{"-", "61.73651086850038`"}]}], "}"}], ",", 
+         TemplateBox[{"3347"}, "OutputSizeLimit`Skeleton"], ",", 
+         RowBox[{"{", 
+           RowBox[{"1", ",", "4", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "5.200528085796142`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"2", ",", "4", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "3.784739378083777`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"3", ",", "4", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "2.207636732391668`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"4", ",", "4", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "0.7357417878161923`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           
+           RowBox[{"5", ",", "4", ",", "0.009999999999999988`", ",", 
+             "0.873437136971916`"}], "}"}], ",", 
+         RowBox[{"{", 
+           
+           RowBox[{"6", ",", "4", ",", "0.009999999999999988`", ",", 
+             "2.549162705634535`"}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"1", ",", "5", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "5.010678263336144`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"2", ",", "5", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "3.562131716348106`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"3", ",", "5", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "1.8906546541731377`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           RowBox[{"4", ",", "5", ",", "0.009999999999999988`", ",", 
+             RowBox[{"-", "0.4356986853527745`"}]}], "}"}], ",", 
+         RowBox[{"{", 
+           
+           RowBox[{"5", ",", "5", ",", "0.009999999999999988`", ",", 
+             "1.3914179329941376`"}], "}"}], ",", 
+         RowBox[{"{", 
+           
+           RowBox[{"6", ",", "5", ",", "0.009999999999999988`", ",", 
+             "3.1750662032206667`"}], "}"}]}], "}"}], Short[#, 8]& ], "line" -> 
+   221, "sessionID" -> 27357457384270442934, "byteCount" -> 485672, "size" -> 
+   8, "stored" -> False, "expr" -> Missing["NotAvailable", "NewSessionID"], 
+   "wrap" -> OutputSizeLimit`Defer, "version" -> 1|>,
+  "OutputSizeLimitTemplate"]], "Output",
+ CellChangeTimes->{{3.926515605971508*^9, 3.9265156336885004`*^9}},
+ CellLabel->
+  "Out[221]=",ExpressionUUID->"127a0194-008d-634a-a704-feb6d511e2d6"],
+
+Cell[BoxData["\<\"D:\\\\Research\\\\Phonon Dipole Coupling\\\\Mathematica \
+Code\\\\VariableAlpha_analysis.txt\"\>"], "Output",
+ CellChangeTimes->{{3.926515605971508*^9, 3.926515633760603*^9}},
+ CellLabel->
+  "Out[222]=",ExpressionUUID->"3fa609ff-e031-ce4e-bc11-e6a159111183"]
+}, Open  ]]
+},
+WindowSize->{1289.25, 1005},
+WindowMargins->{{Automatic, 2436}, {-177.75, Automatic}},
+FrontEndVersion->"14.0 for Microsoft Windows (64-bit) (December 12, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"5d8379dc-e517-6b41-81b9-477dba60e6a2"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 7619, 186, 642, "Input",ExpressionUUID->"2eb65a73-b201-0848-858e-2ed2d116a408"],
+Cell[8202, 210, 3872, 82, 110, "Output",ExpressionUUID->"127a0194-008d-634a-a704-feb6d511e2d6"],
+Cell[12077, 294, 276, 4, 32, "Output",ExpressionUUID->"3fa609ff-e031-ce4e-bc11-e6a159111183"]
+}, Open  ]]
+}
+]
+*)
+
